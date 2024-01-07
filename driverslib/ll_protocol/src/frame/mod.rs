@@ -25,13 +25,13 @@ impl Frame {
         }
     }
 
-    pub fn getPayloadLength(&self) -> u8 {
+    pub fn get_payload_length(&self) -> u8 {
         self.payload.len() as u8
     }
-    pub fn getService(&self) -> u8 {
+    pub fn get_service(&self) -> u8 {
         self.service
     }
-    pub fn getPayload(&self) -> &Vec<u8> {
+    pub fn get_payload(&self) -> &Vec<u8> {
         &self.payload
     }
 }

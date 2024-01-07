@@ -14,24 +14,24 @@ enum Phase {
 
 pub struct FrameSerializer {
     frame: Frame,
-    sendEOF: bool,
+    send_eof: bool,
     phase: Phase,
     index: u8,
-    hasPendingByte: bool,
-    pendingByte: u8,
+    has_pending_byte: bool,
+    pending_byte: u8,
     crc: CRC8
 }
 
 impl FrameSerializer {
     // Default of sendEOF should be true
-    pub fn new(frame: Frame, sendEOF: bool) -> Self {
+    pub fn new(frame: Frame, send_eof: bool) -> Self {
         Self {
             frame,
-            sendEOF,
+            send_eof,
             phase: Phase::SOF,
             index: 0,
-            hasPendingByte: false,
-            pendingByte: 0,
+            has_pending_byte: false,
+            pending_byte: 0,
             crc: (CRC8::new()),
         }
     }
@@ -39,24 +39,24 @@ impl FrameSerializer {
     pub fn reset(&mut self) {
         self.phase = Phase::SOF;
         self.index = 0;
-        self.hasPendingByte = false;
-        self.pendingByte = 0;
+        self.has_pending_byte = false;
+        self.pending_byte = 0;
         self.crc.reset();
     }
 
-    pub fn hasNext(&self) -> bool {
-        self.hasPendingByte || self.phase != Phase::END
+    pub fn has_next(&self) -> bool {
+        self.has_pending_byte || self.phase != Phase::END
     }
 
-    fn handleByteStuffing(&mut self, input: u8) -> u8 {
+    fn handle_byte_stuffing(&mut self, input: u8) -> u8 {
         if input == LEADING_FLAG {
-            self.hasPendingByte = true;
-            self.pendingByte = Byte0x55 as u8;
+            self.has_pending_byte = true;
+            self.pending_byte = Byte0x55 as u8;
             return ESCAPE_FLAG;
         }
         if input == ESCAPE_FLAG {
-            self.hasPendingByte = true;
-            self.pendingByte = Byte0xaa as u8;
+            self.has_pending_byte = true;
+            self.pending_byte = Byte0xaa as u8;
             return ESCAPE_FLAG;
         }
         return input;
@@ -67,56 +67,56 @@ impl Iterator for FrameSerializer {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if !self.hasNext() {
+        if !self.has_next() {
             return None;
         }
 
-        let mut nextByte: u8 = 0;
+        let next_byte;
 
-        if self.hasPendingByte {
-            self.hasPendingByte = false;
-            nextByte = self.pendingByte;
+        if self.has_pending_byte {
+            self.has_pending_byte = false;
+            next_byte = self.pending_byte;
         } else {
             match self.phase {
                 Phase::SOF => {
                     self.phase = Phase::HEADER;
-                    nextByte =  LEADING_FLAG;
+                    next_byte =  LEADING_FLAG;
                 }
                 Phase::HEADER => {
                     self.phase = {
-                        if self.frame.getPayloadLength() > 0 {
+                        if self.frame.get_payload_length() > 0 {
                             Phase::PAYLOAD
                         } else {
                             Phase::CRC
                         }
                     };
-                    let b = (self.frame.getService() << HEADER_SERVICE_BIT_SHIFT) | self.frame.getPayloadLength();
+                    let b = (self.frame.get_service() << HEADER_SERVICE_BIT_SHIFT) | self.frame.get_payload_length();
                     self.crc.write(b);
-                    nextByte = self.handleByteStuffing(b);
+                    next_byte = self.handle_byte_stuffing(b);
                 }
                 Phase::PAYLOAD => {
-                    if self.index >= self.frame.getPayloadLength() - 1 {
+                    if self.index >= self.frame.get_payload_length() - 1 {
                         self.phase = Phase::CRC;
                     }
-                    let b = self.frame.getPayload()[self.index as usize];
+                    let b = self.frame.get_payload()[self.index as usize];
                     self.index += 1;
                     self.crc.write(b);
-                    nextByte = self.handleByteStuffing(b);
+                    next_byte = self.handle_byte_stuffing(b);
                 }
                 Phase::CRC => {
                     self.phase = {
-                        if self.sendEOF {
+                        if self.send_eof {
                             Phase::EOF
                         } else {
                             Phase::END
                         }
                     };
-                    let b = self.crc.getCRC();
-                    nextByte = self.handleByteStuffing(b);
+                    let b = self.crc.get_crc();
+                    next_byte = self.handle_byte_stuffing(b);
                 }
                 Phase::EOF => {
                     self.phase = Phase::END;
-                    nextByte = CLOSING_FLAG;
+                    next_byte = CLOSING_FLAG;
                 }
                 Phase::END => {
                     panic!("Unexpected read at the end of frame.");
@@ -124,6 +124,6 @@ impl Iterator for FrameSerializer {
             }
         }
 
-        return Some(nextByte);
+        return Some(next_byte);
     }
 }

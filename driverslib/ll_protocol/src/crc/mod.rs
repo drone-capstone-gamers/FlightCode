@@ -19,7 +19,7 @@ impl CRC8 {
         self.crc = TABLE[(self.crc ^ input) as usize];
     }
 
-    pub fn getCRC(&self) -> u8 {
+    pub fn get_crc(&self) -> u8 {
         return self.crc;
     }
 }
