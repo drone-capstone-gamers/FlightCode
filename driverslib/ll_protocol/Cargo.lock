@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "data_collector"
+name = "ll_protocol"
 version = "0.1.0"

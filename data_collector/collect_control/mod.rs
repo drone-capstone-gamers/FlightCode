@@ -1,3 +1,0 @@
-fn collection_loop() {
-
-}
