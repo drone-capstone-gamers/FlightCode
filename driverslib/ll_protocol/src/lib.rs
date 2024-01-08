@@ -1,7 +1,7 @@
 mod crc;
-mod frame;
-mod frame_serializer;
-mod frame_deserializer;
+pub mod frame;
+pub mod frame_serializer;
+pub mod frame_deserializer;
 
 #[cfg(test)]
 mod ll_protocol_tests {

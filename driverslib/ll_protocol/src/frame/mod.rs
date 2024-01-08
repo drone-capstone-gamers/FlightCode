@@ -13,7 +13,7 @@ pub const HEADER_PAYLOAD_LENGTH_MASK: u8 = 0x3F;
 
 pub const HEADER_SERVICE_BIT_SHIFT: i32 = 6;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Frame {
     service: u8,
     payload: Vec<u8>
