@@ -1,6 +1,7 @@
 extern crate ll_protocol;
 
 use std::env;
+use std::sync::mpsc;
 use std::time::Duration;
 use ll_protocol::frame::Frame;
 use ll_protocol::frame_deserializer;
@@ -30,7 +31,14 @@ fn receive_frames(mut port: Box<dyn SerialPort>) {
     let mut serial_buf: Vec<u8> = vec![0; 128];
     let mut frame_deserializer = frame_deserializer::FrameDeserializer::new();
 
-    loop {
+    let (tx, rx) = mpsc::channel();
+    ctrlc::set_handler(move || {
+        println!("received Ctrl+C, quitting!");
+        tx.send(true).expect("Failed to send signal to shutdown main thread!");
+    }).expect("Error setting Ctrl-C handler");
+
+    let mut must_quit = false;
+    while !must_quit {
         let bytes_to_read = port.bytes_to_read().unwrap();
 
         if bytes_to_read > 0 {
@@ -40,8 +48,15 @@ fn receive_frames(mut port: Box<dyn SerialPort>) {
                 .filter(|result| result.is_some())
                 .for_each(|result| {
                     let deserialized_frame = result.unwrap();
-                    print!("\n\nReceived frame: {}", deserialized_frame);
+                    println!("\n\nReceived frame: {}", deserialized_frame);
                 });
+        }
+
+        let contr_shutdown = rx.recv_timeout(Duration::from_millis(100));
+        if contr_shutdown.is_ok() {
+            if contr_shutdown.unwrap() {
+                must_quit = true;
+            }
         }
     }
 }
@@ -49,27 +64,27 @@ fn receive_frames(mut port: Box<dyn SerialPort>) {
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() <= 1 {
-        eprintln!("Usage: {} [send <service> <hex_value1> <hex_value2> ... | receive]", args[0]);
+    if args.len() <= 2 {
+        eprintln!("Usage: {} [send <port> <service> <hex_value1> <hex_value2> ... | receive <port>]", args[0]);
         std::process::exit(1);
     }
 
-    // TODO: CLOSE THE PORT UPON CLOSE OF PROGRAM
-    let port = serialport::new("/dev/pts/4", 115_200) // TODO: pass port as arg
+    let port = serialport::new(&args[2], 115_200)
         .timeout(Duration::from_millis(10))
         .open().expect("Failed to open port");
+
     match args[1].as_str() {
         "send" => {
-            if args.len() <= 3 {
-                eprintln!("Usage: {} send <service> <hex_value1> <hex_value2> ...", args[0]);
+            if args.len() <= 4 {
+                eprintln!("Usage: {} send <port> <service> <hex_value1> <hex_value2> ...", args[0]);
                 std::process::exit(1);
             }
 
             let mut args_copy = args;
 
-            let service = args_copy[2].parse().unwrap();
+            let service = args_copy[3].parse().unwrap();
 
-            args_copy.remove(0);args_copy.remove(0);args_copy.remove(0);
+            args_copy.remove(0);args_copy.remove(0);args_copy.remove(0);args_copy.remove(0);
 
             let hex_string = &*args_copy.join("").replace("0x", "");
 
@@ -81,7 +96,7 @@ fn main() {
             receive_frames(port);
         }
         _ => {
-            eprintln!("Usage: {} [send <service> <hex_value1> <hex_value2> ... | receive]", args[0]);
+            eprintln!("Usage: {} [send <port> <service> <hex_value1> <hex_value2> ... | receive <port>]", args[0]);
             std::process::exit(1);
         }
     }

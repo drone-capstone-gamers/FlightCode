@@ -9,5 +9,6 @@ edition = "2021"
 path="../../driverslib/ll_protocol"
 
 [dependencies]
+ctrlc = "3.4.2"
 hex = "0.4.3"
 serialport = "4.3.0"
