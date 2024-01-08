@@ -1,6 +1,6 @@
 extern crate ll_protocol;
 
-use std::env;
+use std::{env, io, thread};
 use std::sync::mpsc;
 use std::time::Duration;
 use ll_protocol::frame::Frame;
@@ -11,7 +11,7 @@ use serialport::SerialPort;
 fn decode_hex_string_into_payload(hex_string: &str) -> Vec<u8> {
     let bytes: Vec<u8> = hex::decode(hex_string).unwrap_or_else(|err| {
         eprintln!("Error decoding hex string: {}", err);
-        std::process::exit(1);
+        vec![]
     });
 
     return bytes;
@@ -31,11 +31,33 @@ fn receive_frames(mut port: Box<dyn SerialPort>) {
     let mut serial_buf: Vec<u8> = vec![0; 128];
     let mut frame_deserializer = frame_deserializer::FrameDeserializer::new();
 
-    let (tx, rx) = mpsc::channel();
+    // Handler for user exit via keyboard interrupt
+    let (ctrlc_tx, ctrlc_rx) = mpsc::channel();
     ctrlc::set_handler(move || {
         println!("received Ctrl+C, quitting!");
-        tx.send(true).expect("Failed to send signal to shutdown main thread!");
+        ctrlc_tx.send(true).expect("Failed to send signal to shutdown main thread!");
     }).expect("Error setting Ctrl-C handler");
+
+    let (send_frame_tx, send_frame_rx) = mpsc::channel();
+    thread::spawn(move || {
+        loop {
+            let mut input = String::new();
+            match io::stdin().read_line(&mut input) {
+                Ok(n) => {
+                    let service = input.remove(0).to_string().parse::<u8>().unwrap();
+                    let hex_string = &*input.replace("0x", "")
+                        .replace(" ", "")
+                        .replace(",", "")
+                        .replace("\n", "");
+
+                    let frame = Frame::new(service, decode_hex_string_into_payload(hex_string));
+
+                    send_frame_tx.send(frame).expect("Failed to send frame to main thread!");
+                }
+                Err(error) => println!("error: {error}"),
+            }
+        }
+    });
 
     let mut must_quit = false;
     while !must_quit {
@@ -52,11 +74,25 @@ fn receive_frames(mut port: Box<dyn SerialPort>) {
                 });
         }
 
-        let contr_shutdown = rx.recv_timeout(Duration::from_millis(100));
+        let contr_shutdown = ctrlc_rx.recv_timeout(Duration::from_millis(100));
         if contr_shutdown.is_ok() {
             if contr_shutdown.unwrap() {
                 must_quit = true;
             }
+        }
+
+        let send_frame_result = send_frame_rx.recv_timeout(Duration::from_millis(100));
+        if send_frame_result.is_ok() {
+            let frame = send_frame_result.unwrap();
+
+            // TODO: factor out duplicate code from send_frame()
+            let frame_serializer = FrameSerializer::new(frame.clone(), true);
+
+            let serialized_frame =  &frame_serializer.collect::<Vec<u8>>();
+
+            port.write(serialized_frame).expect("Write failed!");
+
+            println!("\n\nSent frame: {}", frame);
         }
     }
 }
