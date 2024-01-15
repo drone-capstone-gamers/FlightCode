@@ -13,8 +13,6 @@ Now `flightcode.service` should run at boot and execute the release build of the
 
 ### Services and FlightCode Application Execution
 The systemd services locate and execute the release FlightCode executable by absolute path and executes other supporting programs. It is assumed that the user is "firedrone", if the user does not match this it will need to be updated in system/services/flightcode.service!
-\
-\
 
 ### Clone and build release of FlightCode
 In the "firedrone" user directory clone and build the release of FlightCode with the following commands.
