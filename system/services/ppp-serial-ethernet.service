@@ -1,0 +1,12 @@
+[Unit]
+Description=Firedrone_ppp_serial_ethernet
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=exec
+
+User=root
+ExecStart=pppd /dev/ttyAMA4 115200 10.0.5.2:10.0.5.1 noauth local debug dump defaultroute nocrtscts persist maxfail 0 holdoff 1 nodetach
+
+[Install]
+WantedBy=multi-user.target
