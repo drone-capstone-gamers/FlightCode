@@ -16,6 +16,7 @@ The systemd services locate and execute the release FlightCode executable by abs
 
 ### Install Rust
 sudo apt install curl -y
+
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ### Clone and build release of FlightCode
