@@ -24,6 +24,7 @@ pub fn get_data_source_string(source: DataSource) -> String {
     }
 }
 
+// TODO: associate data with mission
 pub struct IncomingData {
     source: DataSource,
     time_stamp: DateTime<Local>,
@@ -70,6 +71,10 @@ fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
 
             let full_path = format!("{}/{}", source, &*incoming_data.time_stamp.to_rfc3339());
 
+            /**
+                TODO: Better setup file IO to write json data from each source into single file for given mission,
+                      rather than potentially creating hundreds of different files rapidly
+            */
             if incoming_data.serialized.is_some() {
                 let file = full_path.clone() + ".json";
                 fs::write(file.clone(), incoming_data.serialized.unwrap().to_string())
