@@ -30,3 +30,7 @@ jobs:
     - name: Run application tests
       working-directory: ./
       run: cargo test --verbose
+
+    - name: Build cli_ll_protocol
+      working-directory: ./tools/cli_ll_protocol
+      run: cargo build --verbose
