@@ -16,9 +16,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
+
+    - name: Install APT Packages Dependencies
+      run: sudo apt-get install -y libudev-dev
+    
+    - name: Build driverslib
       working-directory: ./driverslib/ll_protocol
       run: cargo build --verbose
-    - name: Run tests
+    - name: Run driverslib tests
       working-directory: ./driverslib/ll_protocol
       run: cargo test --verbose
+      
+    - name: Build application
+      working-directory: ./
+      run: cargo build --verbose
+    - name: Run application tests
+      working-directory: ./
+      run: cargo test --verbose
+
+    - name: Build cli_ll_protocol
+      working-directory: ./tools/cli_ll_protocol
+      run: cargo build --verbose
