@@ -1,14 +1,14 @@
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::SyncSender;
 use json::object;
 use crate::scheduler::collection::data_manage::{DataSource, get_data_source_string, IncomingData};
 use crate::scheduler::timer::TimedTask;
 
 pub struct ExampleTask {
-    storage_sender: Sender<IncomingData>
+    storage_sender: SyncSender<IncomingData>
 }
 
 impl TimedTask for ExampleTask {
-    fn new(storage_sender: Sender<IncomingData>) -> Self {
+    fn new(storage_sender: SyncSender<IncomingData>) -> Self {
         Self {
             storage_sender
         }

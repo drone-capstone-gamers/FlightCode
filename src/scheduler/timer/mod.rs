@@ -1,5 +1,5 @@
 use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender};
+use std::sync::mpsc::{Receiver, Sender, SyncSender};
 use std::thread;
 use std::time::{Duration, Instant};
 use crate::scheduler::collection::data_manage::IncomingData;
@@ -7,7 +7,7 @@ use crate::scheduler::collection::example_task::ExampleTask;
 
 // Runs at every time interval
 pub trait TimedTask {
-    fn new(storage_sender: Sender<IncomingData>) -> Self;
+    fn new(storage_sender: SyncSender<IncomingData>) -> Self;
     fn execute(&self) -> ();
 }
 
