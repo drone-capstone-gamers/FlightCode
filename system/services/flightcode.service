@@ -1,0 +1,14 @@
+[Unit]
+Description=Firedrone_Flightcode
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=exec
+
+User=firedrone
+ExecStart=/home/firedrone/FlightCode/target/release/flightcode
+
+WorkingDirectory=/home/firedrone/FlightCode/
+
+[Install]
+WantedBy=multi-user.target
