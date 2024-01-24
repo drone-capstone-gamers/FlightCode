@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.31"
+envconfig = "0.10.0"
 json = "0.12.4"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
