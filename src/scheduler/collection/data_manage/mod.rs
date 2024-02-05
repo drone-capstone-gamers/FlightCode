@@ -66,8 +66,6 @@ pub fn spawn_data_manager(data_receiver: Receiver<IncomingData>) {
 }
 
 fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
-    let mut geotag: Option<JsonValue> = None;
-
     let data_storage_config = DataStorageConfig::init_from_env().unwrap();
 
     let storage_dir = format!("{}/{}", data_storage_config.target_path, Local::now().to_rfc3339());
@@ -83,11 +81,6 @@ fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
         if data_result.is_ok() {
             let incoming_data = data_result.unwrap();
 
-            // Record GPS coords into local variable to use for geotagging images
-            if incoming_data.source == DataSource::Gps {
-                geotag = incoming_data.serialized.clone();
-            }
-
             /**
                 TODO: Check remaining space on storage drive of destination directory to ensure sufficient storage space
                       and warn on running low
@@ -102,10 +95,6 @@ fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
             }
 
             if incoming_data.file.is_some() {
-                // if geotag.is_some() {
-                //     // TODO: Geotag if file is image
-                // }
-                //
                 // let file = &storage_dir;
                 // fs::write(file.clone(), incoming_data.file.unwrap())
                 //     .expect(&*format!("Failed to write to file: {}", file));
