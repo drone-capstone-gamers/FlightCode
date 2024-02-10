@@ -2,13 +2,14 @@ use std::sync::mpsc;
 use std::sync::mpsc::SyncSender;
 use std::thread::sleep;
 use std::time::Duration;
-use crate::scheduler::collection::capture_go_pro_images::GoProTask;
-use crate::scheduler::collection::data_manage::{IncomingData, spawn_data_manager};
-use crate::scheduler::collection::example_task::ExampleTask;
-use crate::scheduler::timer::{spawn_timer, Timer};
+use crate::application::tasks::capture_go_pro_images::GoProTask;
+use crate::application::data_manage::{IncomingData, spawn_data_manager};
+use crate::application::tasks::example_task::ExampleTask;
+use crate::application::timer::{spawn_timer, Timer};
 
 mod timer;
-mod collection;
+mod tasks;
+mod data_manage;
 
 pub trait DataCollector {
     fn new(storage_sender: SyncSender<IncomingData>) -> Self;

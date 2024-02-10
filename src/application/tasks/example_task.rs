@@ -1,8 +1,8 @@
 use std::sync::mpsc::SyncSender;
 use json::object;
-use crate::scheduler::collection::data_manage::{DataSource, get_data_source_string, IncomingData};
-use crate::scheduler::DataCollector;
-use crate::scheduler::timer::TimedTask;
+use crate::application::data_manage::{DataSource, get_data_source_string, IncomingData};
+use crate::application::DataCollector;
+use crate::application::timer::TimedTask;
 
 pub struct ExampleTask {
     storage_sender: SyncSender<IncomingData>

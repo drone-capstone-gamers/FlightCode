@@ -1,6 +1,6 @@
 use reqwest::blocking::Client;
 use envconfig::Envconfig;
-use crate::scheduler::timer::TimedTask;
+use crate::application::timer::TimedTask;
 
 #[derive(Envconfig)]
 struct GoProConfig {

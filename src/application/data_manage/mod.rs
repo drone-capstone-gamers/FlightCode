@@ -6,7 +6,7 @@ use std::path::Path;
 use chrono::{DateTime, Local};
 use envconfig::Envconfig;
 use json::{JsonValue, object};
-use crate::scheduler::collection::data_manage::live_json_stream::LiveJsonStream;
+use crate::application::data_manage::live_json_stream::LiveJsonStream;
 
 #[derive(Envconfig)]
 struct DataStorageConfig {
