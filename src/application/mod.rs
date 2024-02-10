@@ -15,7 +15,7 @@ pub trait DataCollector {
     fn new(storage_sender: SyncSender<IncomingData>) -> Self;
 }
 
-pub fn start_collection_tasks() {
+pub fn start_application() {
     let (queue_sender, queue_recv) = mpsc::sync_channel(2);
 
     spawn_data_manager(queue_recv);
