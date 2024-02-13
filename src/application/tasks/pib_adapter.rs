@@ -89,7 +89,7 @@ impl TimedTask for PibAdapter {
             if new_port.is_ok() {
                 self.serial = Option::from(new_port.unwrap());
             } else {
-                println!("PIP port not connected!");
+                println!("PIB port not connected!");
                 return;
             }
         }
