@@ -23,7 +23,7 @@ impl GoProTask {
 }
 
 impl TimedTask for GoProTask {
-    fn execute(&self) -> () {
+    fn execute(&mut self) -> () {
         let response = self.client.get(&*format!("{}/gopro/camera/keep_alive", self.go_pro_addr)).send();
 
         if response.is_err() || response.unwrap().status() != 200 {

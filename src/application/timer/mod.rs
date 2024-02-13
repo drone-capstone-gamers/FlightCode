@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 
 // Runs at every time interval
 pub trait TimedTask {
-    fn execute(&self) -> ();
+    fn execute(&mut self) -> ();
 }
 
 pub struct Timer {
@@ -34,7 +34,7 @@ pub fn spawn_timer(timer: Timer, task: Box<dyn TimedTask + Send>) ->  Sender<boo
     return kill_sender;
 }
 
-fn timer_loop(mut timer: Timer, task: Box<dyn TimedTask>, kill_recv: Receiver<bool>) -> () {
+fn timer_loop(mut timer: Timer, mut task: Box<dyn TimedTask>, kill_recv: Receiver<bool>) -> () {
     loop {
         let current_time = Instant::now();
         let duration = current_time.duration_since(timer.last_update);

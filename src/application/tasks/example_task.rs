@@ -17,7 +17,7 @@ impl DataCollector for ExampleTask {
 }
 
 impl TimedTask for ExampleTask {
-    fn execute(&self) -> () {
+    fn execute(&mut self) -> () {
         let example_payload = object!{
             test: "This is a test!"
         };
