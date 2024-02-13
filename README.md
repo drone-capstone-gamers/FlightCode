@@ -23,3 +23,6 @@ In the "firedrone" user directory clone and build the release of FlightCode with
 * `git clone git@github.com:drone-capstone-gamers/FlightCode.git`
 * `cd FlightCode`
 * `cargo build --release`
+
+### Parameters # TODO: test loading of parameters in systemd service
+All FlightCode parameters are configurable inside of config.env. They are loaded automatically by the FlightCode systemd service on boot.

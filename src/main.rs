@@ -1,9 +1,9 @@
-mod scheduler;
+mod application;
 
 extern crate ll_protocol;
 
-fn main() {
-    scheduler::start_collection_tasks();
+use std::{thread, time};
 
-    loop {}
+fn main() {
+    application::start_application();
 }

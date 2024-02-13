@@ -1,14 +1,11 @@
 use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender, SyncSender};
+use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use std::time::{Duration, Instant};
-use crate::scheduler::collection::data_manage::IncomingData;
-use crate::scheduler::collection::example_task::ExampleTask;
 
 // Runs at every time interval
 pub trait TimedTask {
-    fn new(storage_sender: SyncSender<IncomingData>) -> Self;
-    fn execute(&self) -> ();
+    fn execute(&mut self) -> ();
 }
 
 pub struct Timer {
@@ -27,7 +24,7 @@ impl Timer {
     }
 }
 
-pub fn spawn_timer(timer: Timer, task: ExampleTask) ->  Sender<bool> {
+pub fn spawn_timer(timer: Timer, task: Box<dyn TimedTask + Send>) ->  Sender<bool> {
     let (kill_sender, kill_recv) = mpsc::channel();
 
     thread::spawn(|| {
@@ -37,7 +34,7 @@ pub fn spawn_timer(timer: Timer, task: ExampleTask) ->  Sender<bool> {
     return kill_sender;
 }
 
-fn timer_loop(mut timer: Timer, task: ExampleTask, kill_recv: Receiver<bool>) -> () {
+fn timer_loop(mut timer: Timer, mut task: Box<dyn TimedTask>, kill_recv: Receiver<bool>) -> () {
     loop {
         let current_time = Instant::now();
         let duration = current_time.duration_since(timer.last_update);
