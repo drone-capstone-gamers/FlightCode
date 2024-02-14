@@ -20,7 +20,9 @@ pub enum DataSource {
     GoproImage,
     Gps,
     IrCamImage,
-    TempHumidity
+    Power,
+    Temperature,
+    Environmental
 }
 
 pub fn get_data_source_string(source: DataSource) -> String {
@@ -29,7 +31,9 @@ pub fn get_data_source_string(source: DataSource) -> String {
         DataSource::GoproImage => {"high_res_img".to_string()}
         DataSource::Gps => {"gps".to_string()}
         DataSource::IrCamImage => {"thermal_img".to_string()}
-        DataSource::TempHumidity => {"temp_humidity".to_string()}
+        DataSource::Power => {"power".to_string()}
+        DataSource::Temperature => {"power".to_string()}
+        DataSource::Environmental => {"environmental".to_string()}
     }
 }
 

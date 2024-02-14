@@ -1,14 +1,12 @@
-use std::panic::catch_unwind;
-use std::sync::mpsc;
 use std::sync::mpsc::SyncSender;
 use std::time::Duration;
 use envconfig::Envconfig;
 use serialport::SerialPort;
 use byteorder::{ByteOrder, BigEndian};
+use json::object;
 use ll_protocol::frame::Frame;
 use ll_protocol::frame_deserializer::FrameDeserializer;
-use ll_protocol::frame_serializer::FrameSerializer;
-use crate::application::data_manage::IncomingData;
+use crate::application::data_manage::{DataSource, get_data_source_string, IncomingData};
 use crate::application::DataCollector;
 use crate::application::timer::TimedTask;
 
@@ -35,35 +33,81 @@ pub struct PibAdapter {
     storage_sender: SyncSender<IncomingData>
 }
 
+/**
+ * In PIP commands
+ */
 impl PibAdapter {
-    fn handle_in_frame(frame: Frame) {
+    fn handle_in_frame(mut frame: Frame, storage_sender: SyncSender<IncomingData>) {
         match frame.get_service() {
             POWER_TELEMETRY_SERVICE => {
                 if frame.get_payload_length() != PACKET_IN_POWER_TELEMETRY_LENGTH {
                     // TODO: Log an error
                     return;
                 }
+
+                let av_volt = BigEndian::read_f32(&frame.get_payload()[0..3]);
+                let av_cur = BigEndian::read_f32(&frame.get_payload()[4..7]);
+                let av_pow = BigEndian::read_f32(&frame.get_payload()[8..11]);
+
+                let payload = object!{
+                    average_voltage: av_volt,
+                    average_current: av_cur,
+                    average_power: av_pow
+                };
+
+                let data_payload = IncomingData::new(DataSource::Power, Option::from(payload), None);
+                storage_sender.send(data_payload)
+                    .expect(&*format!("Failed to send data into write queue: {}",
+                                      get_data_source_string(DataSource::Power)));
             },
             TEMPERATURE_TELEMETRY_SERVICE => {
                 if frame.get_payload_length() != PACKET_IN_TEMPERATURE_TELEMETRY_LENGTH {
                     // TODO: Log an error
                     return;
                 }
+
+                let pow_converter_temp = BigEndian::read_f32(&frame.get_payload()[0..3]);
+                let esc_1_temp = BigEndian::read_f32(&frame.get_payload()[4..7]);
+                let esc_2_temp = BigEndian::read_f32(&frame.get_payload()[8..11]);
+                let esc_3_temp = BigEndian::read_f32(&frame.get_payload()[12..15]);
+                let esc_4_temp = BigEndian::read_f32(&frame.get_payload()[16..19]);
+
+                let payload = object!{
+                    power_converter_temperature: pow_converter_temp,
+                    esc_1_temperature: esc_1_temp,
+                    esc_2_temperature: esc_2_temp,
+                    esc_3_temperature: esc_3_temp,
+                    esc_4_temperature: esc_4_temp
+                };
+
+                let data_payload = IncomingData::new(DataSource::Temperature, Option::from(payload), None);
+                storage_sender.send(data_payload)
+                    .expect(&*format!("Failed to send data into write queue: {}",
+                                      get_data_source_string(DataSource::Temperature)));
             },
             ENVIRONMENTAL_SENSOR_SERVICE => {
                 if frame.get_payload_length() != PACKET_IN_ENVIRONMENTAL_SENSOR_LENGTH {
                     // TODO: Log an error
                     return;
                 }
+
+                let temp = BigEndian::read_f32(&frame.get_payload()[0..3]);
+                let hum = BigEndian::read_f32(&frame.get_payload()[4..7]);
+
+                let payload = object!{
+                    temperature: temp,
+                    humidity: hum
+                };
+
+                let data_payload = IncomingData::new(DataSource::Environmental, Option::from(payload), None);
+                storage_sender.send(data_payload)
+                    .expect(&*format!("Failed to send data into write queue: {}",
+                                      get_data_source_string(DataSource::Environmental)));
             },
             _ => {
                 // TODO: log invalid in-service num
             }
         }
-    }
-
-    fn parse_float(bytes: [u8; 4]) -> f32 {
-        return BigEndian::read_f32(&bytes);
     }
 }
 
@@ -82,7 +126,7 @@ impl DataCollector for PibAdapter {
 impl TimedTask for PibAdapter {
     fn execute(&mut self) -> () {
         if self.serial.is_none() {
-            let new_port = serialport::new(&PibAdapterConfig::init_from_env().unwrap().serial_port, 115_200)
+            let new_port = serialport::new(&PibAdapterConfig::init_from_env().unwrap().serial_port, 9_600)
                                             .timeout(Duration::from_millis(3))
                                             .open();
 
@@ -105,10 +149,53 @@ impl TimedTask for PibAdapter {
                 .filter(|result| result.is_some())
                 .for_each(|result| {
                     let deserialized_frame = result.unwrap();
-                    PibAdapter::handle_in_frame(deserialized_frame);
+                    PibAdapter::handle_in_frame(deserialized_frame, self.storage_sender.clone());
                 });
         }
     }
 }
 
+/**
+* Out PIP commands
+*/
+impl PibAdapter {
+    fn handle_out_frame() {
 
+    }
+
+    pub fn put_power_set_rate(rate: u8) {
+
+    }
+
+    pub fn get_power_request() {
+
+    }
+
+    pub fn put_temperature_set_rate(rate: u8) {
+
+    }
+
+    pub fn get_temperature__request() {
+
+    }
+
+    pub fn put_environmental_set_rate(rate: u8) {
+
+    }
+
+    pub fn get_environmental__request() {
+
+    }
+
+    pub fn put_servo_stop() {
+
+    }
+
+    pub fn put_servo_set(pwm: u8) {
+
+    }
+
+    pub fn put_indicator_light_set() {
+
+    }
+}
