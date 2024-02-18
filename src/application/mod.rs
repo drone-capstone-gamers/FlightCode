@@ -4,7 +4,7 @@ use std::time::Duration;
 use crate::application::tasks::capture_go_pro_images::GoProTask;
 use crate::application::data_manage::{IncomingData, spawn_data_manager};
 use crate::application::tasks::example_task::ExampleTask;
-use crate::application::tasks::pib_adapter::PibAdapter;
+use crate::application::tasks::pib_adapter::{PibAdapter, PibCommander};
 use crate::application::timer::{spawn_timer, Timer};
 
 mod timer;
@@ -16,7 +16,7 @@ pub trait DataCollector {
 }
 
 pub fn start_application() {
-    let (queue_sender, queue_recv) = mpsc::sync_channel(2);
+    let (queue_sender, queue_recv) = mpsc::sync_channel(10);
 
     spawn_data_manager(queue_recv);
 
@@ -32,9 +32,13 @@ pub fn start_application() {
     let gopro_timer = Timer::new("GoProControl".to_string(), Duration::from_secs(5));
     let gopro_handler = spawn_timer(gopro_timer, Box::from(gopro_task));
 
-    let pib_adapter_task = PibAdapter::new(queue_sender.clone());
+    let (frame_sender, frame_recv) = mpsc::sync_channel(10);
+    let pib_adapter_task = PibAdapter::new(queue_sender.clone(), frame_recv);
     let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
     let pib_adapter_handler = spawn_timer(pib_adapter_timer, Box::from(pib_adapter_task));
+
+    let pib_commander = PibCommander::new(frame_sender);
+    pib_commander.get_temperature_request();
 
     let (ctrlc_tx, ctrlc_rx) = mpsc::channel();
     ctrlc::set_handler(move || {
