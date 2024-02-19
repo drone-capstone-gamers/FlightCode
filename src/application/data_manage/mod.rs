@@ -47,7 +47,7 @@ pub fn get_data_source_string(source: &DataSource) -> String {
         DataSource::Gps => {"gps".to_string()}
         DataSource::IrCamImage => {"thermal_img".to_string()}
         DataSource::Power => {"power".to_string()}
-        DataSource::Temperature => {"power".to_string()}
+        DataSource::Temperature => {"temperature".to_string()}
         DataSource::Environmental => {"environmental".to_string()}
     }
 }
