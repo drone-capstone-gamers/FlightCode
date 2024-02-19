@@ -116,7 +116,7 @@ impl PibAdapter {
                 let data_payload = IncomingData::new(DataSource::Power, Option::from(payload), None);
                 storage_sender.send(data_payload)
                     .expect(&*format!("Failed to send data into write queue: {}",
-                                      get_data_source_string(DataSource::Power)));
+                                      get_data_source_string(&DataSource::Power)));
             },
             TEMPERATURE_TELEMETRY_SERVICE => {
                 if frame.get_payload_length() != PACKET_IN_TEMPERATURE_TELEMETRY_LENGTH {
@@ -141,7 +141,7 @@ impl PibAdapter {
                 let data_payload = IncomingData::new(DataSource::Temperature, Option::from(payload), None);
                 storage_sender.send(data_payload)
                     .expect(&*format!("Failed to send data into write queue: {}",
-                                      get_data_source_string(DataSource::Temperature)));
+                                      get_data_source_string(&DataSource::Temperature)));
             },
             ENVIRONMENTAL_SENSOR_SERVICE => {
                 if frame.get_payload_length() != PACKET_IN_ENVIRONMENTAL_SENSOR_LENGTH {
@@ -160,7 +160,7 @@ impl PibAdapter {
                 let data_payload = IncomingData::new(DataSource::Environmental, Option::from(payload), None);
                 storage_sender.send(data_payload)
                     .expect(&*format!("Failed to send data into write queue: {}",
-                                      get_data_source_string(DataSource::Environmental)));
+                                      get_data_source_string(&DataSource::Environmental)));
             },
             _ => {
                 // TODO: log invalid in-service num

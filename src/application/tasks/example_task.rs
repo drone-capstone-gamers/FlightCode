@@ -26,6 +26,6 @@ impl TimedTask for ExampleTask {
 
         self.storage_sender.send(example_data)
             .expect(&*format!("Failed to send data into write queue: {}",
-                              get_data_source_string(DataSource::Example)));
+                              get_data_source_string(&DataSource::Example)));
     }
 }

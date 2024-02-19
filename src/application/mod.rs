@@ -3,6 +3,7 @@ use std::sync::mpsc::SyncSender;
 use std::time::Duration;
 use crate::application::tasks::capture_go_pro_images::GoProTask;
 use crate::application::data_manage::{IncomingData, spawn_data_manager};
+use crate::application::tasks::capture_ircam_images::CaptureIrImages;
 use crate::application::tasks::example_task::ExampleTask;
 use crate::application::tasks::pib_adapter::{PibAdapter, PibCommander};
 use crate::application::timer::{spawn_timer, Timer};
@@ -32,6 +33,10 @@ pub fn start_application() {
     let gopro_timer = Timer::new("GoProControl".to_string(), Duration::from_secs(5));
     let gopro_handler = spawn_timer(gopro_timer, Box::from(gopro_task));
 
+    let ir_cam_task = CaptureIrImages::new(queue_sender.clone());
+    let ir_cam_timer = Timer::new("GoProControl".to_string(), Duration::from_secs(5));
+    let ir_cam_handler = spawn_timer(ir_cam_timer, Box::from(ir_cam_task));
+
     let (frame_sender, frame_recv) = mpsc::sync_channel(10);
     let pib_adapter_task = PibAdapter::new(queue_sender.clone(), frame_recv);
     let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
@@ -46,6 +51,7 @@ pub fn start_application() {
         example_timer1_handler.send(true).expect("Failed to send kill signal to collection task");
 
         gopro_handler.send(true).expect("Failed to send kill signal to collection task");
+        ir_cam_handler.send(true).expect("Failed to send kill signal to collection task");
         pib_adapter_handler.send(true).expect("Failed to send kill signal to collection task");
 
         ctrlc_tx.send(true).expect("Failed to send signal to shutdown main thread!");
