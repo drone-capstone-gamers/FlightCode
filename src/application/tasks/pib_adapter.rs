@@ -22,7 +22,7 @@ const PACKET_IN_ENVIRONMENTAL_SENSOR_LENGTH: u8 = 8;
 
 #[derive(Envconfig)]
 struct PibAdapterConfig {
-    #[envconfig(from = "PIB_SERIAL_PORT", default = "/dev/ttyACM0")]
+    #[envconfig(from = "PIB_SERIAL_PORT", default = "/dev/ttyAMA0")]
     pub serial_port: String
 }
 
