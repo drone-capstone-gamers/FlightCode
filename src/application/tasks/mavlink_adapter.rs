@@ -73,22 +73,22 @@ impl TimedTask for MavlinkAdapter {
         }
 
 
-        // let connection = self.mavlink_connection.as_mut().unwrap().clone();
-        // match connection.recv() {
-        //     Ok((header, message)) => {
-        //         match message {
-        //             // Handle received messages as needed
-        //             MavMessage::COMMAND_LONG(command_long) => {
-        //                 println!("Received COMMAND_LONG: {:?}", command_long);
-        //             }
-        //             _ => {
-        //                 println!("Received MAVLink message from PixHawk: {:?}", message);
-        //             }
-        //         }
-        //     }
-        //     Err(err) => {
-        //         eprintln!("Error receiving MAVLink message from PixHawk: {:?}", err);
-        //     }
-        // }
+        let connection = self.mavlink_connection.as_mut().unwrap().clone();
+        match connection.recv() {
+            Ok((header, message)) => {
+                match message {
+                    // Handle received messages as needed
+                    MavMessage::COMMAND_LONG(command_long) => {
+                        println!("Received COMMAND_LONG: {:?}", command_long);
+                    }
+                    _ => {
+                        println!("Received MAVLink message from PixHawk: {:?}", message);
+                    }
+                }
+            }
+            Err(err) => {
+                eprintln!("Error receiving MAVLink message from PixHawk: {:?}", err);
+            }
+        }
     }
 }
