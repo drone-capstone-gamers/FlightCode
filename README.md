@@ -1,7 +1,7 @@
 # FlightCode
 
 ## APT Packages Dependencies
-`sudo apt-get install -y libudev-dev pkg-config libssl-dev libclang-dev`
+`sudo apt-get install -y libudev-dev pkg-config libssl-dev libopencv-dev clang libclang-dev`
 
 ## Deploy FlightCode and supporting services on On Board Computer (Raspberry Pi 5)
 ### Install systemd service and setup to run at startup
