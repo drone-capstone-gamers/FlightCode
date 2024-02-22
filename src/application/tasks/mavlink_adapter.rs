@@ -47,11 +47,10 @@ impl MavlinkAdapter {
 
                 move || loop {
                     let res = connection.send_default(&heartbeat);
-                    if res.is_ok() {
-                        thread::sleep(Duration::from_secs(1));
-                    } else {
+                    if res.is_err() {
                         println!("Failed to send initial heartbeat to PixHawk: {res:?}");
                     }
+                    thread::sleep(Duration::from_secs(1));
                 }
             });
         }
@@ -74,22 +73,22 @@ impl TimedTask for MavlinkAdapter {
         }
 
 
-        let connection = self.mavlink_connection.as_mut().unwrap().clone();
-        match connection.recv() {
-            Ok((header, message)) => {
-                match message {
-                    // Handle received messages as needed
-                    MavMessage::COMMAND_LONG(command_long) => {
-                        println!("Received COMMAND_LONG: {:?}", command_long);
-                    }
-                    _ => {
-                        println!("Received MAVLink message from PixHawk: {:?}", message);
-                    }
-                }
-            }
-            Err(err) => {
-                eprintln!("Error receiving MAVLink message from PixHawk: {:?}", err);
-            }
-        }
+        // let connection = self.mavlink_connection.as_mut().unwrap().clone();
+        // match connection.recv() {
+        //     Ok((header, message)) => {
+        //         match message {
+        //             // Handle received messages as needed
+        //             MavMessage::COMMAND_LONG(command_long) => {
+        //                 println!("Received COMMAND_LONG: {:?}", command_long);
+        //             }
+        //             _ => {
+        //                 println!("Received MAVLink message from PixHawk: {:?}", message);
+        //             }
+        //         }
+        //     }
+        //     Err(err) => {
+        //         eprintln!("Error receiving MAVLink message from PixHawk: {:?}", err);
+        //     }
+        // }
     }
 }
