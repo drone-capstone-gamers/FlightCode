@@ -5,3 +5,4 @@ pub mod fetch_temp_humidity;
 pub mod example_task;
 
 pub mod pib_adapter;
+pub mod mavlink_adapter;

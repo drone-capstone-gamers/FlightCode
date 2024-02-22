@@ -6,6 +6,7 @@ use crate::application::data_manage::{IncomingData, spawn_data_manager};
 use crate::application::tasks::capture_ircam_images::CaptureIrImages;
 use crate::application::tasks::example_task::ExampleTask;
 use crate::application::tasks::pib_adapter::{PibAdapter, PibCommander};
+use crate::application::tasks::mavlink_adapter::MavlinkAdapter;
 use crate::application::timer::{spawn_timer, Timer};
 
 mod timer;
@@ -42,6 +43,10 @@ pub fn start_application() {
     let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
     let pib_adapter_handler = spawn_timer(pib_adapter_timer, Box::from(pib_adapter_task));
 
+    let mavlink_adapter = MavlinkAdapter::new(queue_sender.clone());
+    let mavlink_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
+    let mavlink_adapter_handler = spawn_timer(mavlink_adapter_timer, Box::from(mavlink_adapter));
+
     let pib_commander = PibCommander::new(frame_sender);
     pib_commander.get_temperature_request();
 
@@ -53,6 +58,7 @@ pub fn start_application() {
         gopro_handler.send(true).expect("Failed to send kill signal to collection task");
         ir_cam_handler.send(true).expect("Failed to send kill signal to collection task");
         pib_adapter_handler.send(true).expect("Failed to send kill signal to collection task");
+        mavlink_adapter_handler.send(true).expect("Failed to send kill signal to collection task");
 
         ctrlc_tx.send(true).expect("Failed to send signal to shutdown main thread!");
     }).expect("Error setting Ctrl-C handler");
