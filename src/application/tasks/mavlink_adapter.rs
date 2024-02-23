@@ -3,9 +3,10 @@ use std::sync::mpsc::{SyncSender};
 use std::thread;
 use std::time::Duration;
 use envconfig::Envconfig;
+use json::object;
 use mavlink::common::{HEARTBEAT_DATA, MavAutopilot, MavMessage, MavModeFlag, MavState, MavType};
 use mavlink::{MavConnection, MavHeader};
-use crate::application::data_manage::IncomingData;
+use crate::application::data_manage::{DataSource, get_data_source_string, IncomingData};
 use crate::application::timer::TimedTask;
 
 #[derive(Envconfig)]
@@ -80,6 +81,22 @@ impl TimedTask for MavlinkAdapter {
                     // Handle received messages as needed
                     MavMessage::COMMAND_LONG(command_long) => {
                         println!("Received COMMAND_LONG: {:?}", command_long);
+                    }
+                    MavMessage::GLOBAL_POSITION_INT(global_position) => {
+                        // TODO: find more modular way to serialize mavlink messages into json data
+                        let position = object!{
+                            lat: global_position.lat,
+                            lon: global_position.lon,
+                            alt: global_position.alt,
+                            relative_alt: global_position.relative_alt,
+                            ground_speed: {x: global_position.vx, y: global_position.vy, z: global_position.vz},
+                            heading: global_position.hdg
+                        };
+
+                        let payload = IncomingData::new(DataSource::GlobalPosition, Option::from(position), None);
+                        self.storage_sender.send(payload)
+                            .expect(&*format!("Failed to send data into write queue: {}",
+                                              get_data_source_string(&DataSource::GlobalPosition)));
                     }
                     _ => {
                         println!("Received MAVLink message from PixHawk: {:?}", message);

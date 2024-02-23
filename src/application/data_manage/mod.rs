@@ -15,22 +15,25 @@ struct DataStorageConfig {
     pub target_path: String
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum DataSource {
-    Example,
+    Example = 0,
     GoproImage,
-    Gps,
+    GlobalPosition,
     IrCamImage,
     Power,
     Temperature,
-    Environmental
+    Environmental,
+    Count
 }
 
 impl DataSource {
+    const COUNT: usize = DataSource::Count as usize;
+
     pub fn iter() -> Iter<'static, DataSource> {
-        static SOURCES: [DataSource; 7] = [DataSource::Example,
+        static SOURCES: [DataSource; DataSource::COUNT] = [DataSource::Example,
             DataSource::GoproImage,
-            DataSource::Gps,
+            DataSource::GlobalPosition,
             DataSource::IrCamImage,
             DataSource::Power,
             DataSource::Power,
@@ -44,11 +47,12 @@ pub fn get_data_source_string(source: &DataSource) -> String {
     match source {
         DataSource::Example => {"example".to_string()}
         DataSource::GoproImage => {"high_res_img".to_string()}
-        DataSource::Gps => {"gps".to_string()}
+        DataSource::GlobalPosition => {"global_position".to_string()}
         DataSource::IrCamImage => {"thermal_img".to_string()}
         DataSource::Power => {"power".to_string()}
         DataSource::Temperature => {"temperature".to_string()}
         DataSource::Environmental => {"environmental".to_string()}
+        _ => {"unsupported".to_string()}
     }
 }
 
@@ -74,7 +78,7 @@ impl IncomingData {
 fn create_serialized_file(parent_dir: String, source: DataSource) -> fs::File {
     let source = get_data_source_string(&source);
 
-    return fs::File::create(format!("{}/{}.json", &parent_dir, &source))
+    return fs::File::create(format!("{}/{}/{}.json", &parent_dir, &source, &source))
         .expect(&*format!("Creation of {}/{}.json failed!", parent_dir, source));
 }
 
@@ -84,6 +88,21 @@ fn create_source_directories(storage_dir: String) {
         if !Path::new(&source_dir).exists() {
             fs::create_dir_all(&source_dir).expect(&*format!("Failed to create directory: {}", &storage_dir));
         }
+    }
+}
+
+struct DataStreams {
+    json_streams: [Option<LiveJsonStream>; DataSource::COUNT]
+}
+
+impl DataStreams {
+    pub fn write_json_stream(&mut self, source_dir: String, source: DataSource, serialized: JsonValue) {
+        if self.json_streams[source as usize].is_none() {
+            let file = create_serialized_file(source_dir.clone(), source);
+            self.json_streams[source as usize] = Option::from(LiveJsonStream::new(file))
+        }
+
+        self.json_streams[source as usize].as_mut().unwrap().write(serialized);
     }
 }
 
@@ -99,9 +118,8 @@ fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
     let storage_dir = format!("{}/{}", data_storage_config.target_path, Local::now().to_rfc3339());
     create_source_directories(storage_dir.clone());
 
-    // TODO: better setup serialized file streams
-    let example_file = create_serialized_file(storage_dir.clone(), DataSource::Example);
-    let mut example_json_stream = LiveJsonStream::new(example_file);
+    const ARRAY_REPEAT_VALUE: Option<LiveJsonStream> = None;
+    let mut data_streams = DataStreams { json_streams: [ARRAY_REPEAT_VALUE; 7] };
 
     loop {
         let data_result = data_receiver.recv();
@@ -118,7 +136,7 @@ fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
                     data: incoming_data.serialized.unwrap()
                 };
 
-                example_json_stream.write(serialized);
+                data_streams.write_json_stream(storage_dir.clone(), incoming_data.source, serialized);
             }
 
             if incoming_data.file.is_some() {
