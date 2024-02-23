@@ -3,7 +3,7 @@ use std::sync::mpsc::{SyncSender};
 use std::thread;
 use std::time::Duration;
 use envconfig::Envconfig;
-use json::object;
+use json::{JsonValue};
 use mavlink::common::{HEARTBEAT_DATA, MavAutopilot, MavMessage, MavModeFlag, MavState, MavType};
 use mavlink::{MavConnection, MavHeader};
 use crate::application::data_manage::{DataSource, get_data_source_string, IncomingData};
@@ -56,6 +56,15 @@ impl MavlinkAdapter {
             });
         }
     }
+
+    fn send_in_message_to_storage(&mut self, msg: String) {
+        let serialized = JsonValue::from(msg);
+
+        let payload = IncomingData::new(DataSource::GlobalPosition, Option::from(serialized), None);
+        self.storage_sender.send(payload)
+            .expect(&*format!("Failed to send data into write queue: {}",
+                              get_data_source_string(&DataSource::GlobalPosition)));
+    }
 }
 
 impl TimedTask for MavlinkAdapter {
@@ -83,20 +92,7 @@ impl TimedTask for MavlinkAdapter {
                         println!("Received COMMAND_LONG: {:?}", command_long);
                     }
                     MavMessage::GLOBAL_POSITION_INT(global_position) => {
-                        // TODO: find more modular way to serialize mavlink messages into json data
-                        let position = object!{
-                            lat: global_position.lat,
-                            lon: global_position.lon,
-                            alt: global_position.alt,
-                            relative_alt: global_position.relative_alt,
-                            ground_speed: {x: global_position.vx, y: global_position.vy, z: global_position.vz},
-                            heading: global_position.hdg
-                        };
-
-                        let payload = IncomingData::new(DataSource::GlobalPosition, Option::from(position), None);
-                        self.storage_sender.send(payload)
-                            .expect(&*format!("Failed to send data into write queue: {}",
-                                              get_data_source_string(&DataSource::GlobalPosition)));
+                        self.send_in_message_to_storage(serde_json::to_string(&global_position).expect("Failed to serialize MAVLink message to JSON for storage"));
                     }
                     _ => {
                         println!("Received MAVLink message from PixHawk: {:?}", message);

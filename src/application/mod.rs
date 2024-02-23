@@ -43,6 +43,7 @@ pub fn start_application() {
     let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
     let pib_adapter_handler = spawn_timer(pib_adapter_timer, Box::from(pib_adapter_task));
 
+    // TODO: make polling intervals config parameters
     let mavlink_adapter = MavlinkAdapter::new(queue_sender.clone());
     let mavlink_adapter_timer = Timer::new("MavlinkAdapter".to_string(), Duration::from_millis(100));
     let mavlink_adapter_handler = spawn_timer(mavlink_adapter_timer, Box::from(mavlink_adapter));
