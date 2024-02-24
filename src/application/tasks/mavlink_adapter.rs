@@ -5,7 +5,7 @@ use std::time::Duration;
 use envconfig::Envconfig;
 use json::{JsonValue};
 use mavlink::common::{HEARTBEAT_DATA, MavAutopilot, MavMessage, MavModeFlag, MavState, MavType};
-use mavlink::{MavConnection, MavHeader};
+use mavlink::{MavConnection};
 use crate::application::data_manage::{DataSource, get_data_source_string, IncomingData};
 use crate::application::timer::TimedTask;
 
@@ -31,7 +31,7 @@ impl MavlinkAdapter {
     }
 
     fn launch_heartbeat_thread(&mut self) {
-        if (self.heartbeat_lock == false) {
+        if self.heartbeat_lock == false {
             self.heartbeat_lock = true;
 
             thread::spawn({
@@ -76,6 +76,7 @@ impl TimedTask for MavlinkAdapter {
                 self.mavlink_connection = Option::from(Arc::new(new_connection.unwrap()));
             } else {
                 println!("PixHawk not connected!");
+                thread::sleep(Duration::from_secs(10));
                 return;
             }
 
@@ -85,7 +86,7 @@ impl TimedTask for MavlinkAdapter {
 
         let connection = self.mavlink_connection.as_mut().unwrap().clone();
         match connection.recv() {
-            Ok((header, message)) => {
+            Ok((_header, message)) => {
                 match message {
                     // Handle received messages as needed
                     MavMessage::COMMAND_LONG(command_long) => {

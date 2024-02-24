@@ -7,6 +7,7 @@ use crate::application::tasks::capture_ircam_images::CaptureIrImages;
 use crate::application::tasks::example_task::ExampleTask;
 use crate::application::tasks::pib_adapter::{PibAdapter, PibCommander};
 use crate::application::tasks::mavlink_adapter::MavlinkAdapter;
+use crate::application::tasks::obc_telem::ObcTelem;
 use crate::application::timer::{spawn_timer, Timer};
 
 mod timer;
@@ -42,14 +43,18 @@ pub fn start_application() {
     let pib_adapter_task = PibAdapter::new(queue_sender.clone(), frame_recv);
     let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
     let pib_adapter_handler = spawn_timer(pib_adapter_timer, Box::from(pib_adapter_task));
+    let pib_commander = PibCommander::new(frame_sender);
 
     // TODO: make polling intervals config parameters
     let mavlink_adapter = MavlinkAdapter::new(queue_sender.clone());
-    let mavlink_adapter_timer = Timer::new("MavlinkAdapter".to_string(), Duration::from_millis(100));
+    let mavlink_adapter_timer = Timer::new("MavlinkAdapter".to_string(), Duration::from_millis(50));
     let mavlink_adapter_handler = spawn_timer(mavlink_adapter_timer, Box::from(mavlink_adapter));
 
-    let pib_commander = PibCommander::new(frame_sender);
-    pib_commander.get_temperature_request();
+    let obc_telemetry = ObcTelem::new(queue_sender.clone());
+    let obc_telemetry_timer = Timer::new("ObcTelemetry".to_string(), Duration::from_secs(1));
+    let obc_telemetry_handler = spawn_timer(obc_telemetry_timer, Box::from(obc_telemetry));
+
+
 
     let (ctrlc_tx, ctrlc_rx) = mpsc::channel();
     ctrlc::set_handler(move || {
@@ -60,6 +65,7 @@ pub fn start_application() {
         ir_cam_handler.send(true).expect("Failed to send kill signal to collection task");
         pib_adapter_handler.send(true).expect("Failed to send kill signal to collection task");
         mavlink_adapter_handler.send(true).expect("Failed to send kill signal to collection task");
+        obc_telemetry_handler.send(true).expect("Failed to send kill signal to collection task");
 
         ctrlc_tx.send(true).expect("Failed to send signal to shutdown main thread!");
     }).expect("Error setting Ctrl-C handler");

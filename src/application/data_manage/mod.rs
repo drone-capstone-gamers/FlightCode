@@ -24,6 +24,7 @@ pub enum DataSource {
     Power,
     Temperature,
     Environmental,
+    ObcTelemetry,
     Count
 }
 
@@ -37,7 +38,8 @@ impl DataSource {
             DataSource::IrCamImage,
             DataSource::Power,
             DataSource::Power,
-            DataSource::Environmental];
+            DataSource::Environmental,
+            DataSource::ObcTelemetry];
         return SOURCES.iter()
     }
 }
@@ -52,6 +54,7 @@ pub fn get_data_source_string(source: &DataSource) -> String {
         DataSource::Power => {"power".to_string()}
         DataSource::Temperature => {"temperature".to_string()}
         DataSource::Environmental => {"environmental".to_string()}
+        DataSource::ObcTelemetry => {"obc_telemetry".to_string()}
         _ => {"unsupported".to_string()}
     }
 }
@@ -119,7 +122,7 @@ fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
     create_source_directories(storage_dir.clone());
 
     const ARRAY_REPEAT_VALUE: Option<LiveJsonStream> = None;
-    let mut data_streams = DataStreams { json_streams: [ARRAY_REPEAT_VALUE; 7] };
+    let mut data_streams = DataStreams { json_streams: [ARRAY_REPEAT_VALUE; DataSource::COUNT] };
 
     loop {
         let data_result = data_receiver.recv();
