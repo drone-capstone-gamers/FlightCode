@@ -1,4 +1,4 @@
-use std::sync::mpsc;
+use std::sync::{Arc, mpsc};
 use std::sync::mpsc::SyncSender;
 use std::time::Duration;
 use crate::application::tasks::capture_go_pro_images::GoProTask;
@@ -43,7 +43,7 @@ pub fn start_application() {
     let pib_adapter_task = PibAdapter::new(queue_sender.clone(), frame_recv);
     let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
     let pib_adapter_handler = spawn_timer(pib_adapter_timer, Box::from(pib_adapter_task));
-    let pib_commander = PibCommander::new(frame_sender);
+    let pib_commander = Arc::new(PibCommander::new(frame_sender));
 
     // TODO: make polling intervals config parameters
     let mavlink_adapter = MavlinkAdapter::new(queue_sender.clone());
