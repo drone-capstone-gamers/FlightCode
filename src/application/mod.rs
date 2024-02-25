@@ -3,6 +3,7 @@ use std::sync::mpsc::SyncSender;
 use std::time::Duration;
 use crate::application::tasks::capture_go_pro_images::GoProTask;
 use crate::application::data_manage::{IncomingData, spawn_data_manager};
+use crate::application::rest_api_server::spawn_rest_server;
 use crate::application::tasks::capture_ircam_images::CaptureIrImages;
 use crate::application::tasks::example_task::ExampleTask;
 use crate::application::tasks::pib_adapter::{PibAdapter, PibCommander};
@@ -13,6 +14,7 @@ use crate::application::timer::{spawn_timer, Timer};
 mod timer;
 mod tasks;
 mod data_manage;
+mod rest_api_server;
 
 pub trait DataCollector {
     fn new(storage_sender: SyncSender<IncomingData>) -> Self;
@@ -54,7 +56,7 @@ pub fn start_application() {
     let obc_telemetry_timer = Timer::new("ObcTelemetry".to_string(), Duration::from_secs(1));
     let obc_telemetry_handler = spawn_timer(obc_telemetry_timer, Box::from(obc_telemetry));
 
-
+    spawn_rest_server();
 
     let (ctrlc_tx, ctrlc_rx) = mpsc::channel();
     ctrlc::set_handler(move || {

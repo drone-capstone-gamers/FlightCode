@@ -1,5 +1,7 @@
 use std::process::Command;
 use std::sync::mpsc::SyncSender;
+use std::thread;
+use std::time::Duration;
 use json::object;
 use crate::application::data_manage::{DataSource, get_data_source_string, IncomingData};
 use crate::application::DataCollector;
@@ -25,6 +27,7 @@ impl TimedTask for ObcTelem {
 
         if temp_proc_result.is_err() {
             println!("Failed to call cmd to measure OBC temp!");
+            thread::sleep(Duration::from_secs(10)); // TODO: only log every 10 secs but still reattempt as normal
             return;
         }
         let temp_proc = temp_proc_result.unwrap();

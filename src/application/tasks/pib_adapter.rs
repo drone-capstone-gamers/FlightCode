@@ -1,4 +1,5 @@
 use std::sync::mpsc::{Receiver, SyncSender};
+use std::thread;
 use std::time::Duration;
 use envconfig::Envconfig;
 use serialport::SerialPort;
@@ -57,6 +58,7 @@ impl TimedTask for PibAdapter {
                 self.serial = Option::from(new_port.unwrap());
             } else {
                 println!("PIB port not connected!");
+                thread::sleep(Duration::from_secs(10));
                 return;
             }
         }
