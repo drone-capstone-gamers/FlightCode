@@ -4,6 +4,7 @@ use std::sync::mpsc::Receiver;
 use std::{fs, thread};
 use std::path::Path;
 use std::slice::Iter;
+use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Local};
 use envconfig::Envconfig;
 use json::{JsonValue, object};
@@ -25,11 +26,12 @@ pub enum DataSource {
     Temperature,
     Environmental,
     ObcTelemetry,
-    Count
+    Count,
+    Invalid
 }
 
 impl DataSource {
-    const COUNT: usize = DataSource::Count as usize;
+    pub const COUNT: usize = DataSource::Count as usize;
 
     pub fn iter() -> Iter<'static, DataSource> {
         static SOURCES: [DataSource; DataSource::COUNT] = [DataSource::Example,
@@ -43,7 +45,6 @@ impl DataSource {
         return SOURCES.iter()
     }
 }
-
 
 pub fn get_data_source_string(source: &DataSource) -> String {
     match source {
@@ -59,12 +60,27 @@ pub fn get_data_source_string(source: &DataSource) -> String {
     }
 }
 
+pub fn get_data_source_by_name(source_name: String) -> DataSource {
+    match source_name.as_str() {
+        "example" => {DataSource::Example}
+        "high_res_img" => {DataSource::GoproImage}
+        "global_position" => {DataSource::GlobalPosition}
+        "thermal_img" => {DataSource::IrCamImage}
+        "power" => {DataSource::Power}
+        "temperature" => {DataSource::Temperature}
+        "environmental" => {DataSource::Environmental}
+        "obc_telemetry" => {DataSource::ObcTelemetry}
+        _ => {DataSource::Invalid}
+    }
+}
+
 // TODO: associate data with mission
+#[derive(Clone)]
 pub struct IncomingData {
     source: DataSource,
-    time_stamp: DateTime<Local>,
-    serialized: Option<JsonValue>,
-    file: Option<Vec<u8>>
+    pub time_stamp: DateTime<Local>,
+    pub serialized: Option<JsonValue>,
+    pub file: Option<Vec<u8>>
 }
 
 impl IncomingData {
@@ -109,13 +125,20 @@ impl DataStreams {
     }
 }
 
-pub fn spawn_data_manager(data_receiver: Receiver<IncomingData>) {
-    thread::spawn(|| {
-        data_manager_loop(data_receiver);
+pub fn spawn_data_manager(data_receiver: Receiver<IncomingData>) -> Arc<Mutex<Box<[Option<IncomingData>; DataSource::COUNT]>>> {
+    const ARRAY_REPEAT_VALUE: Option<IncomingData> = None;
+    let current_storage = [ARRAY_REPEAT_VALUE; DataSource::COUNT];
+    let current_data_storage = Arc::new(Mutex::new(Box::new(current_storage)));
+    let data_use_in_thread = current_data_storage.clone();
+
+    thread::spawn(move || {
+        data_manager_loop(data_receiver, data_use_in_thread);
     });
+
+    return current_data_storage;
 }
 
-fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
+fn data_manager_loop(data_receiver: Receiver<IncomingData>, current_data_storage: Arc<Mutex<Box<[Option<IncomingData>; DataSource::COUNT]>>>) {
     let data_storage_config = DataStorageConfig::init_from_env().unwrap();
 
     let storage_dir = format!("{}/{}", data_storage_config.target_path, Local::now().to_rfc3339());
@@ -128,6 +151,8 @@ fn data_manager_loop(data_receiver: Receiver<IncomingData>) {
         let data_result = data_receiver.recv();
         if data_result.is_ok() {
             let incoming_data = data_result.unwrap();
+
+            current_data_storage.lock().unwrap()[incoming_data.source as usize] = Option::from(incoming_data.clone());
 
             /**
                 TODO: Check remaining space on storage drive of destination directory to ensure sufficient storage space

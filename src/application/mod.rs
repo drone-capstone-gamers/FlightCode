@@ -23,7 +23,7 @@ pub trait DataCollector {
 pub fn start_application() {
     let (queue_sender, queue_recv) = mpsc::sync_channel(10);
 
-    spawn_data_manager(queue_recv);
+    let current_data = spawn_data_manager(queue_recv);
 
     let example_task = ExampleTask::new(queue_sender.clone());
     let example_timer = Timer::new("Example_Task".to_string(), Duration::from_secs(1));
@@ -56,7 +56,7 @@ pub fn start_application() {
     let obc_telemetry_timer = Timer::new("ObcTelemetry".to_string(), Duration::from_secs(1));
     let obc_telemetry_handler = spawn_timer(obc_telemetry_timer, Box::from(obc_telemetry));
 
-    spawn_rest_server();
+    spawn_rest_server(current_data);
 
     let (ctrlc_tx, ctrlc_rx) = mpsc::channel();
     ctrlc::set_handler(move || {
