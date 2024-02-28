@@ -1,6 +1,7 @@
 use std::sync::{Arc, mpsc};
 use std::sync::mpsc::SyncSender;
 use std::time::Duration;
+use crate::application::battery_monitor::spawn_battery_monitor;
 use crate::application::tasks::capture_go_pro_images::GoProTask;
 use crate::application::data_manage::{IncomingData, spawn_data_manager};
 use crate::application::rest_api_server::spawn_rest_server;
@@ -15,13 +16,14 @@ mod timer;
 mod tasks;
 mod data_manage;
 mod rest_api_server;
+mod battery_monitor;
 
 pub trait DataCollector {
     fn new(storage_sender: SyncSender<IncomingData>) -> Self;
 }
 
 pub fn start_application() {
-    let (queue_sender, queue_recv) = mpsc::sync_channel(10);
+    let (queue_sender, queue_recv) = mpsc::sync_channel(15);
 
     let current_data = spawn_data_manager(queue_recv);
 
@@ -48,7 +50,8 @@ pub fn start_application() {
     let pib_commander = Arc::new(PibCommander::new(frame_sender));
 
     // TODO: make polling intervals config parameters
-    let mavlink_adapter = MavlinkAdapter::new(queue_sender.clone());
+    let (mavlink_cmd_sender, mavlink_cmd_recv) = mpsc::sync_channel(3);
+    let mavlink_adapter = MavlinkAdapter::new(queue_sender.clone(), mavlink_cmd_recv);
     let mavlink_adapter_timer = Timer::new("MavlinkAdapter".to_string(), Duration::from_millis(50));
     let mavlink_adapter_handler = spawn_timer(mavlink_adapter_timer, Box::from(mavlink_adapter));
 
@@ -56,7 +59,9 @@ pub fn start_application() {
     let obc_telemetry_timer = Timer::new("ObcTelemetry".to_string(), Duration::from_secs(1));
     let obc_telemetry_handler = spawn_timer(obc_telemetry_timer, Box::from(obc_telemetry));
 
-    spawn_rest_server(current_data);
+    spawn_rest_server(current_data.clone());
+
+    spawn_battery_monitor(current_data.clone(), mavlink_cmd_sender.clone());
 
     let (ctrlc_tx, ctrlc_rx) = mpsc::channel();
     ctrlc::set_handler(move || {

@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::sync::mpsc::{SyncSender};
+use std::sync::mpsc::{Receiver, SyncSender};
 use std::thread;
 use std::time::Duration;
 use envconfig::Envconfig;
@@ -17,14 +17,16 @@ struct MavlinkConfig {
 
 pub struct MavlinkAdapter {
     storage_sender: SyncSender<IncomingData>,
+    command_recv: Receiver<MavMessage>,
     mavlink_connection: Option<Arc<Box<dyn MavConnection<MavMessage> + Sync + Send>>>,
     heartbeat_lock: bool
 }
 
 impl MavlinkAdapter {
-    pub fn new(storage_sender: SyncSender<IncomingData>) -> Self {
+    pub fn new(storage_sender: SyncSender<IncomingData>, command_recv: Receiver<MavMessage>) -> Self {
         Self {
             storage_sender,
+            command_recv,
             mavlink_connection: None,
             heartbeat_lock: false
         }
@@ -102,6 +104,16 @@ impl TimedTask for MavlinkAdapter {
             }
             Err(err) => {
                 eprintln!("Error receiving MAVLink message from PixHawk: {:?}", err);
+            }
+        }
+
+        let mavlink_command_result = self.command_recv.recv_timeout(Duration::from_millis(100));
+        if mavlink_command_result.is_ok() {
+            let mavlink_command = mavlink_command_result.unwrap();
+
+            let res = connection.send_default(&mavlink_command);
+            if res.is_err() {
+                println!("Failed to send command to PixHawk: {res:?}");
             }
         }
     }
