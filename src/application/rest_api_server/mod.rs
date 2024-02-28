@@ -58,7 +58,7 @@ async fn run_rest_server(current_data_storage: Arc<Mutex<Box<[Option<IncomingDat
                     .app_data(web::Data::new(current_data_storage.clone()))
                     .route("/{data_source}", web::get().to(handle_get_request))
             })
-            .bind("127.0.0.1:8080").expect("Failed to bind address for REST API server!")
+            .bind("0.0.0.0:8080").expect("Failed to bind address for REST API server!")
             .run()
             .await;
 }

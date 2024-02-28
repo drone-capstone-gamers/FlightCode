@@ -21,7 +21,7 @@ impl DataCollector for ObcTelem {
 
 impl TimedTask for ObcTelem {
     fn execute(&mut self) -> () {
-        let temp_proc_result = Command::new("/opt/vc/bin/vcgencmd")
+        let temp_proc_result = Command::new("vcgencmd")
             .arg("measure_temp")
             .output();
 
@@ -35,12 +35,12 @@ impl TimedTask for ObcTelem {
         let temp_string: String = temp_proc.stdout.iter().map(|&c| c as char).collect();
 
         let temp_string_split: Vec<&str> = temp_string.split("=").collect();
-        if temp_string.len() != 2 {
+        if temp_string_split.len() != 2 {
             println!("Failed to parse command response for OBC temp!");
             return;
         }
 
-        let temp_value = temp_string_split[1];
+        let temp_value = temp_string_split[1].strip_suffix("'C\n");
 
         let telem_json = object!{
             core_temperature: temp_value
