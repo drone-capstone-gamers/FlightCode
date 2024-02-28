@@ -26,6 +26,7 @@ pub enum DataSource {
     Temperature,
     Environmental,
     ObcTelemetry,
+    PiCamImage,
     Count,
     Invalid
 }
@@ -41,7 +42,8 @@ impl DataSource {
             DataSource::Power,
             DataSource::Power,
             DataSource::Environmental,
-            DataSource::ObcTelemetry];
+            DataSource::ObcTelemetry,
+            DataSource::PiCamImage];
         return SOURCES.iter()
     }
 }
@@ -49,13 +51,14 @@ impl DataSource {
 pub fn get_data_source_string(source: &DataSource) -> String {
     match source {
         DataSource::Example => {"example".to_string()}
-        DataSource::GoproImage => {"high_res_img".to_string()}
+        DataSource::GoproImage => {"gopro_image".to_string()}
         DataSource::GlobalPosition => {"global_position".to_string()}
         DataSource::IrCamImage => {"thermal_img".to_string()}
         DataSource::Power => {"power".to_string()}
         DataSource::Temperature => {"temperature".to_string()}
         DataSource::Environmental => {"environmental".to_string()}
         DataSource::ObcTelemetry => {"obc_telemetry".to_string()}
+        DataSource::PiCamImage => {"picam_image".to_string()}
         _ => {"unsupported".to_string()}
     }
 }
@@ -63,13 +66,14 @@ pub fn get_data_source_string(source: &DataSource) -> String {
 pub fn get_data_source_by_name(source_name: String) -> DataSource {
     match source_name.as_str() {
         "example" => {DataSource::Example}
-        "high_res_img" => {DataSource::GoproImage}
+        "gopro_image" => {DataSource::GoproImage}
         "global_position" => {DataSource::GlobalPosition}
         "thermal_img" => {DataSource::IrCamImage}
         "power" => {DataSource::Power}
         "temperature" => {DataSource::Temperature}
         "environmental" => {DataSource::Environmental}
         "obc_telemetry" => {DataSource::ObcTelemetry}
+        "picam_image" => {DataSource::PiCamImage}
         _ => {DataSource::Invalid}
     }
 }
