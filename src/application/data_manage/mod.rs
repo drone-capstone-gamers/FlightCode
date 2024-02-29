@@ -40,7 +40,7 @@ impl DataSource {
             DataSource::GlobalPosition,
             DataSource::IrCamImage,
             DataSource::Power,
-            DataSource::Power,
+            DataSource::Temperature,
             DataSource::Environmental,
             DataSource::ObcTelemetry,
             DataSource::PiCamImage];
