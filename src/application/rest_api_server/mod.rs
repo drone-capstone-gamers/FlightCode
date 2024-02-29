@@ -15,16 +15,19 @@ async fn serve_frontend() -> HttpResponse {
 
 
                     function get_data(source) {
+                        let data_return = '';
                         $.get(source, function( data ) {
-                            return data;
+                            data_return = data;
                         });
+
+                        return data_return;
                     }
 
                     $(document).ready(function() {
                     // Function to update element text
                     function updateBat() {
                       // Update the text of the element with the current timestamp
-                      $('#battery_voltage').text(get_data('power').average_voltage;
+                      $('#battery_voltage').text(get_data('power').average_voltage);
                     }
 
                     // Call the updateText function every second (1000 milliseconds)
