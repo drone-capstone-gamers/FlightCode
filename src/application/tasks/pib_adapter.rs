@@ -105,9 +105,9 @@ impl PibAdapter {
                     return;
                 }
 
-                let av_volt = BigEndian::read_f32(&frame.get_payload()[0..3]);
-                let av_cur = BigEndian::read_f32(&frame.get_payload()[4..7]);
-                let av_pow = BigEndian::read_f32(&frame.get_payload()[8..11]);
+                let av_volt = BigEndian::read_f32(&frame.get_payload()[0..4]);
+                let av_cur = BigEndian::read_f32(&frame.get_payload()[4..8]);
+                let av_pow = BigEndian::read_f32(&frame.get_payload()[8..12]);
 
                 let payload = object!{
                     average_voltage: av_volt,
@@ -126,11 +126,11 @@ impl PibAdapter {
                     return;
                 }
 
-                let pow_converter_temp = BigEndian::read_f32(&frame.get_payload()[0..3]);
-                let esc_1_temp = BigEndian::read_f32(&frame.get_payload()[4..7]);
-                let esc_2_temp = BigEndian::read_f32(&frame.get_payload()[8..11]);
-                let esc_3_temp = BigEndian::read_f32(&frame.get_payload()[12..15]);
-                let esc_4_temp = BigEndian::read_f32(&frame.get_payload()[16..19]);
+                let pow_converter_temp = BigEndian::read_f32(&frame.get_payload()[0..4]);
+                let esc_1_temp = BigEndian::read_f32(&frame.get_payload()[4..8]);
+                let esc_2_temp = BigEndian::read_f32(&frame.get_payload()[8..12]);
+                let esc_3_temp = BigEndian::read_f32(&frame.get_payload()[12..16]);
+                let esc_4_temp = BigEndian::read_f32(&frame.get_payload()[16..20]);
 
                 let payload = object!{
                     power_converter_temperature: pow_converter_temp,
@@ -151,8 +151,8 @@ impl PibAdapter {
                     return;
                 }
 
-                let temp = BigEndian::read_f32(&frame.get_payload()[0..3]);
-                let hum = BigEndian::read_f32(&frame.get_payload()[4..7]);
+                let temp = BigEndian::read_f32(&frame.get_payload()[0..4]);
+                let hum = BigEndian::read_f32(&frame.get_payload()[4..8]);
 
                 let payload = object!{
                     temperature: temp,
