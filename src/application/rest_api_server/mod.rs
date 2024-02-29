@@ -10,28 +10,25 @@ async fn serve_frontend() -> HttpResponse {
         .body("<html><head><script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js\"></script>\
         <link rel=\"stylesheet\" href=\"resource://content-accessible/plaintext.css\"></head>
                 <body>
-                <div id=\"battery_voltage\"></div>
+                <div id=\"power\"></div>
                 <script>
 
 
-                    function get_data(source) {
-                        let data_return = '';
-                        $.get(source, function( data ) {
-                            data_return = data;
+                    function get_data() {
+                        $.get('power', function (data) {
+                            $('#power').text(data['average_voltage']);
                         });
-
-                        return data_return;
                     }
 
                     $(document).ready(function() {
                     // Function to update element text
                     function updateBat() {
                       // Update the text of the element with the current timestamp
-                      $('#battery_voltage').text(get_data('power').average_voltage);
+
                     }
 
                     // Call the updateText function every second (1000 milliseconds)
-                    setInterval(updateBat, 1000);
+                    setInterval(get_data, 1000);
                   });
 
                 </script>
