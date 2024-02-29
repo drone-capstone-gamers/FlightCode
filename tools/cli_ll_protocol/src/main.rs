@@ -105,7 +105,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    let port = serialport::new(&args[2], 115_200)
+    let port = serialport::new(&args[2], 9_600)
         .timeout(Duration::from_millis(10))
         .open().expect("Failed to open port");
 
