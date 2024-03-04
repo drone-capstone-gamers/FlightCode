@@ -7,12 +7,12 @@ export default function Home() {
     >
       <div className="relative flex before:absolute">
         <div className="inline-grid grid-cols-3 gap-5 border border-gray-500">
-          <div>
-            <DataFetcher dataSource={"example"} />
-          </div>
-          <div>
-            <DataFetcher dataSource={"power"} />
-          </div>
+          <DataFetcher dataSource={"example"} />
+          <DataFetcher dataSource={"power"} />
+          <DataFetcher dataSource={"temperature"} />
+          <DataFetcher dataSource={"obc_telemetry"} />
+          <DataFetcher dataSource={"global_position"} />
+          <DataFetcher dataSource={"environmental"} />
         </div>
       </div>
     </main>

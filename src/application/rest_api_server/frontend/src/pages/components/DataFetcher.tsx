@@ -23,7 +23,7 @@ const DataFetcher = ({ dataSource }: Props) => {
 
   return (
     <div className='border-r border-gray-500'>
-      <h2 className='text-emerald-200'>{dataSource.toUpperCase()}</h2>
+      <h2 className='text-emerald-200'>{dataSource ? dataSource.toUpperCase() : ''}</h2>
       {data ? (
         <div>
           <ul>
