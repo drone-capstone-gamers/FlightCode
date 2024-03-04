@@ -1,40 +1,9 @@
 use std::sync::{Arc, Mutex};
 use std::thread;
-use actix_web::{App, HttpResponse, HttpServer, Responder, web};
+use actix_files::Files;
+use actix_web::{App, HttpResponse, HttpServer, web};
 use actix_web::http::StatusCode;
 use crate::application::data_manage::{DataSource, get_data_source_by_name, IncomingData};
-
-async fn serve_frontend() -> HttpResponse {
-    return HttpResponse::build(StatusCode::OK)
-        .content_type("text/html")
-        .body("<html><head><script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js\"></script>\
-        <link rel=\"stylesheet\" href=\"resource://content-accessible/plaintext.css\"></head>
-                <body>
-                <div id=\"power\"></div>
-                <script>
-
-
-                    function get_data() {
-                        $.get('power', function (data) {
-                            $('#power').text(data['average_voltage']);
-                        });
-                    }
-
-                    $(document).ready(function() {
-                    // Function to update element text
-                    function updateBat() {
-                      // Update the text of the element with the current timestamp
-
-                    }
-
-                    // Call the updateText function every second (1000 milliseconds)
-                    setInterval(get_data, 1000);
-                  });
-
-                </script>
-                </body>
-                </html>");
-}
 
 async fn handle_get_request(current_data_storage: web::Data<Arc<Mutex<Box<[Option<IncomingData>; DataSource::COUNT]>>>>,
                             path: web::Path<(String,)>) -> HttpResponse {
@@ -88,8 +57,8 @@ async fn run_rest_server(current_data_storage: Arc<Mutex<Box<[Option<IncomingDat
     return HttpServer::new(move || {
                 App::new()
                     .app_data(web::Data::new(current_data_storage.clone()))
-                    .route("/", web::get().to(serve_frontend))
-                    .route("/{data_source}", web::get().to(handle_get_request))
+                    .route("/api/{data_source}", web::get().to(handle_get_request))
+                    .service(Files::new("/", "./src/application/rest_api_server/frontend/out").index_file("index.html"))
             })
             .bind("0.0.0.0:8080").expect("Failed to bind address for REST API server!")
             .run()
