@@ -24,5 +24,8 @@ In the "firedrone" user directory clone and build the release of FlightCode with
 * `cd FlightCode`
 * `cargo build --release`
 
-### Parameters # TODO: test loading of parameters in systemd service
+### Parameters
 All FlightCode parameters are configurable inside of config.env. They are loaded automatically by the FlightCode systemd service on boot.
+
+### Enable Raspberry PiCamera V4L2 Driver
+* `sudo modprobe bcm2835-v4l2`
