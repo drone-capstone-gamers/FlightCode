@@ -42,11 +42,11 @@ pub fn start_application() {
     let gopro_handler = spawn_timer(gopro_timer, Box::from(gopro_task));
 
     let ir_cam_task = CaptureIrImages::new(queue_sender.clone());
-    let ir_cam_timer = Timer::new("GoProControl".to_string(), Duration::from_secs(5));
+    let ir_cam_timer = Timer::new("IrCamCapture".to_string(), Duration::from_secs(1));
     let ir_cam_handler = spawn_timer(ir_cam_timer, Box::from(ir_cam_task));
 
     let pi_cam_task = CapturePiCamImages::new(queue_sender.clone());
-    let pi_cam_timer = Timer::new("GoProControl".to_string(), Duration::from_secs(5));
+    let pi_cam_timer = Timer::new("PiCamCapture".to_string(), Duration::from_secs(1));
     let pi_cam_handler = spawn_timer(pi_cam_timer, Box::from(pi_cam_task));
 
     let (frame_sender, frame_recv) = mpsc::sync_channel(10);
