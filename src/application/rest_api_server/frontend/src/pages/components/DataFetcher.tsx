@@ -35,7 +35,7 @@ const DataFetcher = ({ dataSource }: Props) => {
           <ul>
             {Object.entries(data).map(([key, value]) => (
               <li key={key}>
-                <strong>{key}:</strong> {JSON.stringify(value)}
+                <strong>{key}:</strong> {typeof value === 'number' ? value.toFixed(4) : JSON.stringify(value)}
               </li>
             ))}
           </ul>

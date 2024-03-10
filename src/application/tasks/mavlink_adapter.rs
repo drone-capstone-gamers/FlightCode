@@ -94,14 +94,14 @@ impl TimedTask for MavlinkAdapter {
                             .expect(&*format!("Failed to send data into write queue: {}",
                                               get_data_source_string(&DataSource::GlobalPosition)));
                     }
-                    MavMessage::SCALED_IMU(imu) => {
+                    MavMessage::SCALED_IMU2(imu) => {
                         let json_string = serde_json::to_string(&imu).expect("Failed to serialize MAVLink Scaled IMU message to JSON for storage");
                         let serialized = JsonValue::from(json_string);
 
-                        let payload = IncomingData::new(DataSource::GlobalPosition, Option::from(serialized), None);
+                        let payload = IncomingData::new(DataSource::Imu, Option::from(serialized), None);
                         self.storage_sender.send(payload)
                             .expect(&*format!("Failed to send data into write queue: {}",
-                                              get_data_source_string(&DataSource::GlobalPosition)));
+                                              get_data_source_string(&DataSource::Imu)));
                     }
                     _ => {
                         println!("Received MAVLink message from PixHawk: {:?}", message);
