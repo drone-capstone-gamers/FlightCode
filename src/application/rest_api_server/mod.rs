@@ -1,5 +1,7 @@
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 use actix_files::Files;
 use actix_web::{App, HttpResponse, HttpServer, web};
 use actix_web::http::StatusCode;
@@ -47,6 +49,8 @@ async fn handle_get_request(current_data_storage: web::Data<Arc<Mutex<Box<[Optio
 }
 
 pub fn spawn_rest_server(current_data_storage: Arc<Mutex<Box<[Option<IncomingData>; DataSource::COUNT]>>>) {
+    sleep(Duration::from_secs(60));
+
     thread::spawn(|| {
         let _ = run_rest_server(current_data_storage);
     });
