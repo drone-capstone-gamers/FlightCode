@@ -11,6 +11,10 @@
 * `sudo systemctl enable ppp-serial-ethernet.service`
 Now `flightcode.service` should run at boot and execute the release build of the FlightCode located at "/home/firedrone/FlightCode/target/release/flightcode". 
 
+### Install udev rules for linking external devices to consisent device paths
+* `sudo cp system/services/udev_rules/* /etc/udev/rules.d/`
+* `sudo udevadm control --reload-rules`
+
 ### Services and FlightCode Application Execution
 The systemd services locate and execute the release FlightCode executable by absolute path and executes other supporting programs. It is assumed that the user is "firedrone", if the user does not match this it will need to be updated in system/services/flightcode.service!
 

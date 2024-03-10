@@ -25,7 +25,7 @@ impl TimedTask for CaptureIrImages {
     fn execute(&mut self) -> () {
         if self.capture.is_none() {
             // TODO: find a way to differentiate cameras
-            let mut new_capture = videoio::VideoCapture::new(0,videoio::CAP_ANY);
+            let mut new_capture = videoio::VideoCapture::new(99,videoio::CAP_ANY);
 
             if new_capture.is_ok() {
                 self.capture = Option::from(new_capture.unwrap());
