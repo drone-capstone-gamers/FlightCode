@@ -18,6 +18,7 @@ mod tasks;
 mod data_manage;
 mod rest_api_server;
 mod battery_monitor;
+mod payload_orientator;
 
 pub trait DataCollector {
     fn new(storage_sender: SyncSender<IncomingData>) -> Self;

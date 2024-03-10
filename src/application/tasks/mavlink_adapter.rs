@@ -58,15 +58,6 @@ impl MavlinkAdapter {
             });
         }
     }
-
-    fn send_in_message_to_storage(&mut self, msg: String) {
-        let serialized = JsonValue::from(msg);
-
-        let payload = IncomingData::new(DataSource::GlobalPosition, Option::from(serialized), None);
-        self.storage_sender.send(payload)
-            .expect(&*format!("Failed to send data into write queue: {}",
-                              get_data_source_string(&DataSource::GlobalPosition)));
-    }
 }
 
 impl TimedTask for MavlinkAdapter {
@@ -95,7 +86,22 @@ impl TimedTask for MavlinkAdapter {
                         println!("Received COMMAND_LONG: {:?}", command_long);
                     }
                     MavMessage::GLOBAL_POSITION_INT(global_position) => {
-                        self.send_in_message_to_storage(serde_json::to_string(&global_position).expect("Failed to serialize MAVLink message to JSON for storage"));
+                        let json_string = serde_json::to_string(&global_position).expect("Failed to serialize MAVLink Global Position message to JSON for storage");
+                        let serialized = JsonValue::from(json_string);
+
+                        let payload = IncomingData::new(DataSource::GlobalPosition, Option::from(serialized), None);
+                        self.storage_sender.send(payload)
+                            .expect(&*format!("Failed to send data into write queue: {}",
+                                              get_data_source_string(&DataSource::GlobalPosition)));
+                    }
+                    MavMessage::SCALED_IMU(imu) => {
+                        let json_string = serde_json::to_string(&imu).expect("Failed to serialize MAVLink Scaled IMU message to JSON for storage");
+                        let serialized = JsonValue::from(json_string);
+
+                        let payload = IncomingData::new(DataSource::GlobalPosition, Option::from(serialized), None);
+                        self.storage_sender.send(payload)
+                            .expect(&*format!("Failed to send data into write queue: {}",
+                                              get_data_source_string(&DataSource::GlobalPosition)));
                     }
                     _ => {
                         println!("Received MAVLink message from PixHawk: {:?}", message);

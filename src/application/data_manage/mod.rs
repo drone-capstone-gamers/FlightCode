@@ -27,6 +27,7 @@ pub enum DataSource {
     Environmental,
     ObcTelemetry,
     PiCamImage,
+    Imu,
     Count,
     Invalid
 }
@@ -43,7 +44,8 @@ impl DataSource {
             DataSource::Temperature,
             DataSource::Environmental,
             DataSource::ObcTelemetry,
-            DataSource::PiCamImage];
+            DataSource::PiCamImage,
+            DataSource::Imu];
         return SOURCES.iter()
     }
 }
@@ -59,6 +61,7 @@ pub fn get_data_source_string(source: &DataSource) -> String {
         DataSource::Environmental => {"environmental".to_string()}
         DataSource::ObcTelemetry => {"obc_telemetry".to_string()}
         DataSource::PiCamImage => {"picam_image".to_string()}
+        DataSource::Imu => {"imu".to_string()}
         _ => {"unsupported".to_string()}
     }
 }
@@ -74,6 +77,7 @@ pub fn get_data_source_by_name(source_name: String) -> DataSource {
         "environmental" => {DataSource::Environmental}
         "obc_telemetry" => {DataSource::ObcTelemetry}
         "picam_image" => {DataSource::PiCamImage}
+        "imu" => {DataSource::Imu}
         _ => {DataSource::Invalid}
     }
 }

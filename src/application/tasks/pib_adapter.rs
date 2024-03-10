@@ -244,7 +244,7 @@ impl PibCommander {
 
     }
 
-    pub fn put_servo_set(&self, pwm: u8) {
+    pub fn put_servo_set(&self, pos: i8) {
 
     }
 

@@ -1,8 +1,7 @@
-use std::process::{Command, Stdio};
+use std::process::{Command};
 use std::sync::mpsc::SyncSender;
 use std::thread;
 use std::time::Duration;
-use std::io::Read;
 use crate::application::data_manage::{DataSource, get_data_source_string, IncomingData};
 use crate::application::DataCollector;
 use crate::application::timer::TimedTask;
