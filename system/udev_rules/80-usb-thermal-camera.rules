@@ -1,2 +1,2 @@
-ACTION=="add", SUBSYSTEM=="usb", TEST=="authorized", TAG+="uaccess"
+ACTION=="add", SUBSYSTEM=="usb", TEST=="authorized", TAG+="uaccess", RUN+="/bin/sleep 5"
 SUBSYSTEM=="video4linux", ATTRS{idVendor}=="1e4e", ATTRS{idProduct}=="0100", TAG+="uaccess", SYMLINK+="video99"
