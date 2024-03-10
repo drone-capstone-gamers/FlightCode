@@ -7,18 +7,24 @@ interface Props {
 const DataFetcher = ({ dataSource }: Props) => {
   const [data, setData] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`/api/${dataSource}`);
-        const jsonData = await response.json();
-        setData(jsonData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`/api/${dataSource}`);
+      const jsonData = await response.json();
+      setData(jsonData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData();
+    }, 1000); // Update every second
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [dataSource]);
 
   return (
