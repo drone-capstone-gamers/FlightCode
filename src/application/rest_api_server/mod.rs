@@ -49,7 +49,7 @@ async fn handle_get_request(current_data_storage: web::Data<Arc<Mutex<Box<[Optio
 }
 
 pub fn spawn_rest_server(current_data_storage: Arc<Mutex<Box<[Option<IncomingData>; DataSource::COUNT]>>>) {
-    sleep(Duration::from_secs(60));
+    sleep(Duration::from_secs(10));
 
     thread::spawn(|| {
         let _ = run_rest_server(current_data_storage);
