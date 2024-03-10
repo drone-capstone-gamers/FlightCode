@@ -6,6 +6,7 @@ use crate::application::tasks::capture_go_pro_images::GoProTask;
 use crate::application::data_manage::{IncomingData, spawn_data_manager};
 use crate::application::rest_api_server::spawn_rest_server;
 use crate::application::tasks::capture_ircam_images::CaptureIrImages;
+use crate::application::tasks::capture_picam_images::CapturePiCamImages;
 use crate::application::tasks::example_task::ExampleTask;
 use crate::application::tasks::pib_adapter::{PibAdapter, PibCommander};
 use crate::application::tasks::mavlink_adapter::MavlinkAdapter;
@@ -43,6 +44,10 @@ pub fn start_application() {
     let ir_cam_timer = Timer::new("GoProControl".to_string(), Duration::from_secs(5));
     let ir_cam_handler = spawn_timer(ir_cam_timer, Box::from(ir_cam_task));
 
+    let pi_cam_task = CapturePiCamImages::new(queue_sender.clone());
+    let pi_cam_timer = Timer::new("GoProControl".to_string(), Duration::from_secs(5));
+    let pi_cam_handler = spawn_timer(pi_cam_timer, Box::from(pi_cam_task));
+
     let (frame_sender, frame_recv) = mpsc::sync_channel(10);
     let pib_adapter_task = PibAdapter::new(queue_sender.clone(), frame_recv);
     let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
@@ -70,6 +75,7 @@ pub fn start_application() {
 
         gopro_handler.send(true).expect("Failed to send kill signal to collection task");
         ir_cam_handler.send(true).expect("Failed to send kill signal to collection task");
+        pi_cam_handler.send(true).expect("Failed to send kill signal to collection task");
         pib_adapter_handler.send(true).expect("Failed to send kill signal to collection task");
         mavlink_adapter_handler.send(true).expect("Failed to send kill signal to collection task");
         obc_telemetry_handler.send(true).expect("Failed to send kill signal to collection task");
