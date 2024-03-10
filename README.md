@@ -1,7 +1,7 @@
 # FlightCode
 
 ## APT Packages Dependencies
-`sudo apt-get install -y libudev-dev`
+`sudo apt-get install -y libudev-dev pkg-config libssl-dev libopencv-dev clang libclang-dev`
 
 ## Deploy FlightCode and supporting services on On Board Computer (Raspberry Pi 5)
 ### Install systemd service and setup to run at startup
@@ -24,5 +24,5 @@ In the "firedrone" user directory clone and build the release of FlightCode with
 * `cd FlightCode`
 * `cargo build --release`
 
-### Parameters # TODO: test loading of parameters in systemd service
+### Parameters
 All FlightCode parameters are configurable inside of config.env. They are loaded automatically by the FlightCode systemd service on boot.

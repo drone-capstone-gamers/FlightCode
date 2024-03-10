@@ -6,7 +6,7 @@ StartLimitIntervalSec=0
 Type=exec
 
 User=firedrone
-ExecStart=source /home/firedrone/FlightCode/config.env && /home/firedrone/FlightCode/target/release/flightcode
+ExecStart=bash /home/firedrone/FlightCode/exec-flightcode.sh
 
 WorkingDirectory=/home/firedrone/FlightCode/
 
