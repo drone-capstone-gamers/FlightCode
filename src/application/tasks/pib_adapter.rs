@@ -245,7 +245,11 @@ impl PibCommander {
     }
 
     pub fn put_servo_set(&self, pos: i8) {
+        let payload: u8 = pos as u8;
 
+        let frame = Frame::new(ACTUATOR_CONTROL_SERVICE, vec![payload]);
+
+        self.frame_sender.send(frame.clone()).expect(&*format!("Failed to send frame: {}", frame));
     }
 
     pub fn put_indicator_light_set(&mut self, mode: LightMode, brightness: u8) {

@@ -4,6 +4,7 @@ use std::time::Duration;
 use crate::application::battery_monitor::spawn_battery_monitor;
 use crate::application::tasks::capture_go_pro_images::GoProTask;
 use crate::application::data_manage::{IncomingData, spawn_data_manager};
+use crate::application::payload_orientator::spawn_payload_orientator;
 use crate::application::rest_api_server::spawn_rest_server;
 use crate::application::tasks::capture_ircam_images::CaptureIrImages;
 use crate::application::tasks::capture_picam_images::CapturePiCamImages;
@@ -68,6 +69,8 @@ pub fn start_application() {
     spawn_rest_server(current_data.clone());
 
     spawn_battery_monitor(current_data.clone(), mavlink_cmd_sender.clone());
+
+    spawn_payload_orientator(current_data.clone(), pib_commander.clone());
 
     let (ctrlc_tx, ctrlc_rx) = mpsc::channel();
     ctrlc::set_handler(move || {
