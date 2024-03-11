@@ -12,7 +12,7 @@ export default function Home() {
         <DataFetcher dataSource={"temperature"} />
         <DataFetcher dataSource={"obc_telemetry"} />
         <DataFetcher dataSource={"global_position"} />
-        <DataFetcher dataSource={"altitude"} />
+        <DataFetcher dataSource={"attitude"} />
         <DataFetcher dataSource={"environmental"} />
       </div>
 
