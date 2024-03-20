@@ -59,7 +59,7 @@ pub fn start_application() {
     // TODO: make polling intervals config parameters
     let (mavlink_cmd_sender, mavlink_cmd_recv) = mpsc::sync_channel(3);
     let mavlink_adapter = MavlinkAdapter::new(queue_sender.clone(), mavlink_cmd_recv);
-    let mavlink_adapter_timer = Timer::new("MavlinkAdapter".to_string(), Duration::from_millis(50));
+    let mavlink_adapter_timer = Timer::new("MavlinkAdapter".to_string(), Duration::from_millis(0));
     let mavlink_adapter_handler = spawn_timer(mavlink_adapter_timer, Box::from(mavlink_adapter));
 
     let obc_telemetry = ObcTelem::new(queue_sender.clone());

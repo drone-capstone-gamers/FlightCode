@@ -83,7 +83,7 @@ impl TimedTask for MavlinkAdapter {
                 match message {
                     // Handle received messages as needed
                     MavMessage::COMMAND_LONG(command_long) => {
-                        println!("Received COMMAND_LONG: {:?}", command_long);
+                        //println!("Received COMMAND_LONG: {:?}", command_long);
                     }
                     MavMessage::GLOBAL_POSITION_INT(global_position) => {
                         let json_string = serde_json::to_string(&global_position).expect("Failed to serialize MAVLink Global Position message to JSON for storage");
@@ -98,13 +98,15 @@ impl TimedTask for MavlinkAdapter {
                         let json_string = serde_json::to_string(&attitude).expect("Failed to serialize MAVLink Altitude message to JSON for storage");
                         let serialized = JsonValue::from(json_string);
 
+                        //println!("RECEIVED ATTITUDE: {:?}", attitude);
+                        
                         let payload = IncomingData::new(DataSource::Attitude, Option::from(serialized), None);
                         self.storage_sender.send(payload)
                             .expect(&*format!("Failed to send data into write queue: {}",
                                               get_data_source_string(&DataSource::Attitude)));
                     }
                     _ => {
-                        println!("Received MAVLink message from PixHawk: {:?}", message);
+                        //println!("Received MAVLink message from PixHawk: {:?}", message);
                     }
                 }
             }
@@ -113,7 +115,7 @@ impl TimedTask for MavlinkAdapter {
             }
         }
 
-        let mavlink_command_result = self.command_recv.recv_timeout(Duration::from_millis(100));
+        let mavlink_command_result = self.command_recv.recv_timeout(Duration::from_millis(0));
         if mavlink_command_result.is_ok() {
             let mavlink_command = mavlink_command_result.unwrap();
 
