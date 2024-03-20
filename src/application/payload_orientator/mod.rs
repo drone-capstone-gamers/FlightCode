@@ -2,6 +2,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
+use actix_web::http::StatusCode;
+use actix_web::HttpResponse;
 use crate::application::data_manage::{DataSource, IncomingData};
 use crate::application::tasks::pib_adapter::PibCommander;
 
@@ -11,14 +13,34 @@ pub fn spawn_payload_orientator(current_data_storage: Arc<Mutex<Box<[Option<Inco
     });
 }
 
+fn get_drone_orientation(current_data_storage: Arc<Mutex<Box<[Option<IncomingData>; DataSource::COUNT]>>>) -> f32 {
+    let current_attitude_result = &current_data_storage.lock().unwrap()[DataSource::Attitude as usize];
+
+    if current_attitude_result.is_none() || current_attitude_result.as_ref().unwrap().serialized.is_none() {
+        return 0.0;
+    }
+
+    return current_attitude_result.as_ref().unwrap().serialized.as_ref().unwrap()["pitch"].as_f32().unwrap();
+}
+
+const PITCH_ANGLE_MIN: f32 = 0.0;
+const PITCH_ANGLE_MAX: f32 = 1.58;
+
+const SERVO_VALUE_MIN: f32 = -128.0;
+const SERVO_VALUE_MAX: f32 = 127.0;
+
 fn payload_orientator_loop(current_data_storage: Arc<Mutex<Box<[Option<IncomingData>; DataSource::COUNT]>>>, pib_commander: Arc<PibCommander>) {
-    let mut test_value: i8 = -128;
-
     loop {
-        test_value = if test_value == -128 {127} else {-128};
+        let pitch = get_drone_orientation(current_data_storage.clone());
 
-        pib_commander.put_servo_set(test_value);
+        // 90 degrees downwards(copter) 122 : 90 degrees up (cruise) -128
+        // pitch value 0 for copter : pitch value 1.58 for cruise:
 
-        sleep(Duration::from_secs(1));
+        // Perform the linear mapping
+        let servo_value = (((pitch - PITCH_ANGLE_MIN) / (PITCH_ANGLE_MAX - PITCH_ANGLE_MIN)) * (SERVO_VALUE_MAX - SERVO_VALUE_MIN) + SERVO_VALUE_MIN) as i8;
+
+        pib_commander.put_servo_set(servo_value);
+
+        sleep(Duration::from_millis(50)); // 20 hz
     }
 }
