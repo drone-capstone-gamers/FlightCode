@@ -52,7 +52,7 @@ pub fn start_application() {
 
     let (frame_sender, frame_recv) = mpsc::sync_channel(10);
     let pib_adapter_task = PibAdapter::new(queue_sender.clone(), frame_recv);
-    let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(1));
+    let pib_adapter_timer = Timer::new("PIBAdapter".to_string(), Duration::from_secs(0));
     let pib_adapter_handler = spawn_timer(pib_adapter_timer, Box::from(pib_adapter_task));
     let pib_commander = Arc::new(PibCommander::new(frame_sender));
 

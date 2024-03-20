@@ -23,22 +23,20 @@ fn get_drone_orientation(current_data_storage: Arc<Mutex<Box<[Option<IncomingDat
     let json_result = current_attitude_result.as_ref().unwrap().serialized.as_ref().unwrap().to_string();
 
     // Find the position of the substring
-    let substring = "Value:";
+    let substring = "\"pitch\":";
     let start_index = match json_result.find(substring) {
         Some(index) => index + substring.len(),
         None => {
-            println!("Substring not found");
             return 0.0;
         }
     };
 
     // Extract the substring containing the float
-    let float_str = &json_result[start_index..];
+    let float_str = &json_result[start_index..start_index+5];
 
     // Parse the float from the extracted substring
     match float_str.trim().parse::<f32>() {
         Ok(float_value) => {
-            println!("Parsed float value: {}", float_value);
             return float_value;
         }
         Err(_) => {
@@ -48,8 +46,8 @@ fn get_drone_orientation(current_data_storage: Arc<Mutex<Box<[Option<IncomingDat
     }
 }
 
-const PITCH_ANGLE_MIN: f32 = 0.0;
-const PITCH_ANGLE_MAX: f32 = 1.58;
+const PITCH_ANGLE_MIN: f32 = -1.58;
+const PITCH_ANGLE_MAX: f32 = 0.0;
 
 const SERVO_VALUE_MIN: f32 = -128.0;
 const SERVO_VALUE_MAX: f32 = 127.0;

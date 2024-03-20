@@ -78,7 +78,7 @@ impl TimedTask for PibAdapter {
                 });
         }
 
-        let frame_result = self.frame_receiver.recv_timeout(Duration::from_millis(100));
+        let frame_result = self.frame_receiver.recv_timeout(Duration::from_millis(0));
         if frame_result.is_ok() {
             let frame = frame_result.unwrap();
             self.send_frame(frame);
